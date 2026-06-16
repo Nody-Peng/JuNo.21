@@ -1,0 +1,24 @@
+/* Light Mode Brand Colors */
+html[data-theme='light'] {
+  --theme-success-400: #4a3b37;
+  --theme-success-500: #3B2D2A;
+  --theme-success-600: #2a1f1d;
+}
+
+/* Dark Mode Brand Colors */
+html[data-theme='dark'] {
+  --theme-success-400: #d6bda4;
+  --theme-success-500: #c4a990;
+  --theme-success-600: #a38971;
+}
+
+/* Elegant Buttons & Inputs */
+.payload__login-box, div[class*="login"] form {
+  border-radius: 4px;
+}
+
+button.btn {
+  border-radius: 4px !important;
+  letter-spacing: 0.05em;
+  font-family: inherit;
+}
