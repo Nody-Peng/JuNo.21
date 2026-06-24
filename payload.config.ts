@@ -1,6 +1,7 @@
 import { buildConfig, Block } from 'payload';
 import { postgresAdapter } from '@payloadcms/db-postgres';
 import { lexicalEditor, BlocksFeature } from '@payloadcms/richtext-lexical';
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -321,6 +322,19 @@ export default buildConfig({
       connectionString: process.env.DATABASE_URI || '',
     },
   }),
+  
+  plugins: [
+    ...(process.env.BLOB_READ_WRITE_TOKEN
+      ? [
+          vercelBlobStorage({
+            collections: {
+              media: true,
+            },
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+          }),
+        ]
+      : []),
+  ],
   
   cors: ['http://localhost:3000', 'http://192.168.50.143:3000'],
   csrf: ['http://localhost:3000', 'http://192.168.50.143:3000'],
