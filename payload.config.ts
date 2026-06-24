@@ -336,8 +336,16 @@ export default buildConfig({
       : []),
   ],
   
-  cors: ['http://localhost:3000', 'http://192.168.50.143:3000'],
-  csrf: ['http://localhost:3000', 'http://192.168.50.143:3000'],
+  cors: [
+    'http://localhost:3000', 
+    'http://192.168.50.143:3000', 
+    process.env.NEXT_PUBLIC_SITE_URL || ''
+  ].filter(Boolean),
+  csrf: [
+    'http://localhost:3000', 
+    'http://192.168.50.143:3000', 
+    process.env.NEXT_PUBLIC_SITE_URL || ''
+  ].filter(Boolean),
   
   secret: process.env.PAYLOAD_SECRET || '',
 });
