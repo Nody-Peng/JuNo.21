@@ -8,7 +8,7 @@ export default function Footer() {
         {/* Brand Info */}
         <div className="flex flex-col items-center md:items-start text-center md:text-left">
           <Link href="/" className="mb-6 inline-block hover:opacity-90 transition-opacity">
-             <img src="/夏至原點工作室.jpeg" alt="夏至原點" className="h-16 w-auto object-contain" />
+             <img src="/夏至原點工作室.png" alt="夏至原點" className="h-16 w-auto object-contain" />
           </Link>
           <p className="text-[#F9F8F6]/70 max-w-[320px] font-light tracking-wide text-sm leading-relaxed">
             從台北到聖塔芭芭拉，一萬公里的遠距離交換日記。記錄著瑣碎日常與真心推薦的生活選物。

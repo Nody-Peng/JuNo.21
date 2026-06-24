@@ -45,6 +45,68 @@ const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
           <iframe src={embedUrl} className="w-full h-full" allowFullScreen frameBorder="0" />
         </div>
       );
+    },
+    product: ({ node }) => {
+      const { productName, price, description, link, image } = node.fields;
+      const imageUrl = typeof image === 'object' && image?.url ? image.url : 'https://picsum.photos/seed/product/600/600';
+      const imageAlt = typeof image === 'object' && image?.alt ? image.alt : productName;
+
+      return (
+        <div className="not-prose my-16 w-full bg-white/80 backdrop-blur-2xl border border-black/5 shadow-[0_20px_60px_rgba(0,0,0,0.04)] rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-stretch">
+          
+          {/* Image Section */}
+          <div className="w-full md:w-2/5 relative h-[350px] md:h-auto bg-stone-100 shrink-0">
+            <img 
+              src={imageUrl} 
+              alt={imageAlt} 
+              className="absolute inset-0 w-full h-full object-cover" 
+            />
+          </div>
+
+          {/* Content Section */}
+          <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center bg-white/50 relative">
+            {/* Decorative Top Right Badge */}
+            <div className="absolute top-8 right-8 text-[#8A6A5C] opacity-30">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+              </svg>
+            </div>
+
+            <span className="inline-block text-xs font-bold tracking-widest text-[#8A6A5C] mb-4 uppercase">
+              Editor's Pick
+            </span>
+            
+            <h3 className="text-2xl md:text-3xl font-serif text-[#3B2D2A] leading-snug mb-2 text-balance">
+              {productName}
+            </h3>
+            
+            {price && (
+              <p className="text-lg font-sans font-medium text-[#5C4F4A] mb-6">
+                {price}
+              </p>
+            )}
+            
+            <div className="text-[#3B2D2A]/80 leading-relaxed font-sans mb-8 text-sm md:text-base whitespace-pre-wrap">
+              {description}
+            </div>
+            
+            {link && (
+              <a 
+                href={link} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="group w-fit flex items-center gap-3 bg-[#2C2422] text-[#F9F8F6] px-8 py-3.5 rounded-full hover:bg-[#8A6A5C] transition-colors duration-300 shadow-md font-sans text-sm font-medium tracking-widest"
+              >
+                查看詳情
+                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </a>
+            )}
+          </div>
+          
+        </div>
+      );
     }
   }
 });

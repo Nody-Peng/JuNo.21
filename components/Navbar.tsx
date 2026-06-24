@@ -13,7 +13,7 @@ export default function Navbar() {
         <div>
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <img 
-              src="/夏至原點工作室.jpeg" 
+              src="/夏至原點工作室.png" 
               alt="夏至原點" 
               className="h-10 md:h-12 w-auto object-contain" 
             />
