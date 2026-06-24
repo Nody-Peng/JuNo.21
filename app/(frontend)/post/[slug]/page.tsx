@@ -29,13 +29,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
   ...defaultConverters,
   blocks: {
-    map: ({ node }) => (
+    map: ({ node }: { node: any }) => (
       <div 
         className="w-full aspect-video my-10 rounded-2xl overflow-hidden shadow-sm" 
         dangerouslySetInnerHTML={{ __html: node.fields.embedHtml }} 
       />
     ),
-    video: ({ node }) => {
+    video: ({ node }: { node: any }) => {
       let embedUrl = node.fields.url;
       if (embedUrl.includes('watch?v=')) {
         embedUrl = embedUrl.replace('watch?v=', 'embed/');
@@ -46,7 +46,7 @@ const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
         </div>
       );
     },
-    product: ({ node }) => {
+    product: ({ node }: { node: any }) => {
       const { productName, price, description, link, image } = node.fields;
       const imageUrl = typeof image === 'object' && image?.url ? image.url : 'https://picsum.photos/seed/product/600/600';
       const imageAlt = typeof image === 'object' && image?.alt ? image.alt : productName;
