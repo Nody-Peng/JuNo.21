@@ -323,18 +323,21 @@ export default buildConfig({
     },
   }),
   
-  plugins: [
-    ...(process.env.BLOB_READ_WRITE_TOKEN
-      ? [
-          vercelBlobStorage({
-            collections: {
-              media: true,
-            },
-            token: process.env.BLOB_READ_WRITE_TOKEN,
-          }),
-        ]
-      : []),
-  ],
+  plugins: (() => {
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    // Only initialize if token matches the required format: vercel_blob_rw_<storeId>_<random>
+    if (token && /^vercel_blob_rw_[A-Za-z0-9]+_[A-Za-z0-9]+$/.test(token)) {
+      return [
+        vercelBlobStorage({
+          collections: {
+            media: true,
+          },
+          token,
+        }),
+      ];
+    }
+    return [];
+  })() as any,
   
   cors: [
     'http://localhost:3000', 
