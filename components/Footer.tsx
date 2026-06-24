@@ -8,20 +8,19 @@ export default function Footer() {
         {/* Brand Info */}
         <div className="flex flex-col items-center md:items-start text-center md:text-left">
           <Link href="/" className="mb-6 inline-block hover:opacity-90 transition-opacity">
-             <img src="/夏至原點工作室.png" alt="夏至原點" className="h-16 w-auto object-contain" />
+             <img src="/夏至?��?工�?�?png" alt="夏至?��?" className="h-16 w-auto object-contain" />
           </Link>
           <p className="text-[#F9F8F6]/70 max-w-[320px] font-light tracking-wide text-sm leading-relaxed">
-            從台北到聖塔芭芭拉，一萬公里的遠距離交換日記。記錄著瑣碎日常與真心推薦的生活選物。
-          </p>
+            從台?�到?��??�芭?��?一?�公?��??��??�交?�日記。�??��?????�常?��?心推?��??�活?�物??          </p>
         </div>
         <div className="flex flex-col md:items-end gap-4 text-sm font-sans font-medium tracking-widest">
           <a href="#" className="hover:text-white transition-colors">Instagram</a>
           <a href="#" className="hover:text-white transition-colors">Facebook</a>
-          <a href="#" className="hover:text-white transition-colors">聯絡我</a>
+          <a href="#" className="hover:text-white transition-colors">?�絡??/a>
         </div>
       </div>
       <div className="max-w-[1400px] mx-auto mt-16 pt-8 border-t border-[#4e3d39] text-xs text-[#F9F8F6]/40 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4 tracking-widest">
-        <span>© 2026 夏至原點. All rights reserved.</span>
+        <span>© 2026 夏至?��?. All rights reserved.</span>
         <span>Made with Payload CMS & Next.js</span>
       </div>
     </footer>
