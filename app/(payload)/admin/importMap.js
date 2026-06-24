@@ -27,6 +27,7 @@ import { default as default_e34c28bdc97e3fecf976b23b26d64cc9 } from '@/component
 import { default as default_be7cf7eb3883beb9807d8789bb1dd363 } from '@/components/payload/BeforeLogin'
 import { default as default_5015375d22f919ac854ae733f72ca068 } from '@/components/payload/SendNewsletter'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_a4b5c6d7e8f9 } from '@payloadcms/storage-vercel-blob/client'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
@@ -58,5 +59,6 @@ export const importMap = {
   "@/components/payload/Logo#default": default_e34c28bdc97e3fecf976b23b26d64cc9,
   "@/components/payload/BeforeLogin#default": default_be7cf7eb3883beb9807d8789bb1dd363,
   "@/components/payload/SendNewsletter#default": default_5015375d22f919ac854ae733f72ca068,
-  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
+  "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_a4b5c6d7e8f9
 }
