@@ -36,36 +36,36 @@ const VideoBlock: Block = {
 
 const ProductBlock: Block = {
   slug: 'product',
-  labels: { singular: '質�??�物?��? (Product Showcase)', plural: '?�物?��? (Products)' },
+  labels: { singular: '質感選物卡片 (Product Showcase)', plural: '選物卡片 (Products)' },
   fields: [
     {
       name: 'productName',
       type: 'text',
       required: true,
-      label: '?��??�稱',
+      label: '商品名稱',
     },
     {
       name: 'price',
       type: 'text',
-      label: '?�格?��??�售??(例�?：NT$ 1,200)',
+      label: '價格或參考售價 (例如：NT$ 1,200)',
     },
     {
       name: 'description',
       type: 'textarea',
       required: true,
-      label: '?�薦?�由 / ?��??�述',
+      label: '推薦理由 / 商品描述',
     },
     {
       name: 'link',
       type: 'text',
-      label: '購買?��?紹�?? (URL)',
+      label: '購買或介紹連結 (URL)',
     },
     {
       name: 'image',
       type: 'upload',
       relationTo: 'media',
       required: true,
-      label: '?��??��? (建議?��??�正?�形)',
+      label: '商品圖片 (建議去背或正方形)',
     },
   ],
 };
@@ -74,7 +74,7 @@ export default buildConfig({
   admin: {
     user: 'users',
     meta: {
-      titleSuffix: '- 夏至?��?',
+      titleSuffix: '- 夏至原點',
     },
     components: {
       graphics: {
@@ -100,7 +100,7 @@ export default buildConfig({
       slug: 'users',
       auth: true, 
       admin: {
-        group: '系統設�?',
+        group: '系統設定',
       },
       fields: [],
     },
@@ -111,7 +111,7 @@ export default buildConfig({
       },
       admin: {
         useAsTitle: 'title',
-        group: '?�容管�?',
+        group: '內容管理',
       },
       fields: [
         {
@@ -127,7 +127,7 @@ export default buildConfig({
         read: () => true,
       },
       admin: {
-        group: '媒�?資�?',
+        group: '媒體資源',
       },
       upload: {
         staticDir: 'public/media',
@@ -138,7 +138,7 @@ export default buildConfig({
           name: 'alt',
           type: 'text',
           required: true,
-          label: '?�代?��? (SEO ??',
+          label: '替代文字 (SEO 用)',
         },
       ],
     },
@@ -149,7 +149,7 @@ export default buildConfig({
       },
       admin: {
         useAsTitle: 'title',
-        group: '?�容管�?',
+        group: '內容管理',
       },
       fields: [
         {
@@ -171,7 +171,7 @@ export default buildConfig({
           relationTo: 'media',
           admin: {
             position: 'sidebar',
-            description: '上傳此�?章�?封面?��?',
+            description: '上傳此文章的封面圖片',
           },
         },
         {
@@ -180,7 +180,7 @@ export default buildConfig({
           defaultValue: false,
           admin: {
             position: 'sidebar',
-            description: '將此?��?設為置�?/精選?��?',
+            description: '將此文章設為置頂/精選文章',
           },
         },
         {
@@ -188,7 +188,7 @@ export default buildConfig({
           type: 'text',
           admin: {
             position: 'sidebar',
-            description: '?�為????��?(�??��?紀??，�?填寫系�??�稱',
+            description: '若為連載文章(如:抗癌紀錄)，請填寫系列名稱',
           },
         },
         {
@@ -234,8 +234,8 @@ export default buildConfig({
       slug: 'subscribers',
       admin: {
         useAsTitle: 'email',
-        group: '?��???,
-        description: '管�??�?�電子報訂閱?�。�?消勾?�「�??�」即?��?止�?該用?�發?�信件�?,
+        group: '電子報',
+        description: '管理所有電子報訂閱者。取消勾選「啟用」即可停止對該用戶發送信件。',
         defaultColumns: ['email', 'subscribedAt', 'isActive'],
       },
       access: {
@@ -255,7 +255,7 @@ export default buildConfig({
         {
           name: 'subscribedAt',
           type: 'date',
-          label: '訂閱?��?',
+          label: '訂閱時間',
           admin: {
             readOnly: true,
             date: {
@@ -267,16 +267,16 @@ export default buildConfig({
         {
           name: 'unsubscribeToken',
           type: 'text',
-          label: '?��?Token',
+          label: '退訂 Token',
           admin: {
             readOnly: true,
-            description: '系統?��??��?，用?�退訂�??',
+            description: '系統自動產生，用於退訂連結',
           },
         },
         {
           name: 'isActive',
           type: 'checkbox',
-          label: '?�用（�?消勾?�即?�止?�信�?,
+          label: '啟用（取消勾選即停止發信）',
           defaultValue: true,
           admin: {
             position: 'sidebar',
@@ -290,7 +290,7 @@ export default buildConfig({
     {
       slug: 'navigation',
       admin: {
-        group: '系統設�?',
+        group: '系統設定',
       },
       fields: [
         {

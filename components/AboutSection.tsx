@@ -13,20 +13,22 @@ export default function AboutSection() {
         
         <ScrollReveal direction="up" delay={100}>
           <h2 className="text-4xl md:text-5xl font-serif text-[#3B2D2A] tracking-widest drop-shadow-sm mb-8 text-center md:text-left">
-            ?�於?��?          </h2>
+            關於我們
+          </h2>
         </ScrollReveal>
         
         <ScrollReveal direction="scale" delay={250}>
           <div className="w-24 md:w-32 mb-10 mix-blend-multiply flex justify-center md:justify-start">
-             <img src="/夏至?��?工�?�?png" alt="夏至?��?工�?�? className="w-full h-auto object-contain" />
+             <img src="/logo.png" alt="夏至原點工作室" className="w-full h-auto object-contain" />
           </div>
         </ScrollReveal>
         
         <ScrollReveal direction="up" delay={400}>
           <p className="text-[#3B2D2A] text-center max-w-[600px] leading-[2] font-sans text-sm md:text-base font-medium tracking-wide">
-            ?�們是夏至?��??��??�她?��??��??��??�芭?�攻讀?��??�士，�??��??��??�段?��??��??��?br/><br/>
-            ?�個部?�格就�??��??�跨越太平�??�交?�日記。這裡沒�?什麼大?��?，只?�兩?�人?�自?��?活�??�、�?距離?�酸?�苦�???��??�們�?心覺得好?�、想?�薦給�??��?活選?��?br/><br/>
-            ?��?你�??��?歷�?距離，�??�單純�?歡�??��??��?，都歡�?你在?�裡?��??�步??          </p>
+            我們是夏至原點。因為她前往加州聖塔芭芭拉攻讀地理博士，我們開啟了這段遠距離戀愛。<br/><br/>
+            這個部落格就像是我們跨越太平洋的交換日記。這裡沒有什麼大道理，只有兩個人各自的生活碎片、遠距離的酸甜苦辣，還有我們真心覺得好用、想推薦給你的生活選物。<br/><br/>
+            無論你也在經歷遠距離，還是單純喜歡我們的故事，都歡迎你在這裡停下腳步。
+          </p>
         </ScrollReveal>
 
       </div>

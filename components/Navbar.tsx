@@ -2,9 +2,9 @@ import Link from 'next/link';
 
 export default function Navbar() {
   const navItems = [
-    { label: '首�?', link: '/' },
-    { label: '?��?', link: '/blog' },
-    { label: '訂閱?��???, link: '/#subscribe' },
+    { label: '首頁', link: '/' },
+    { label: '文章', link: '/blog' },
+    { label: '訂閱電子報', link: '/#subscribe' },
   ];
 
   return (
@@ -13,11 +13,11 @@ export default function Navbar() {
         <div>
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <img 
-              src="/夏至?��?工�?�?png" 
-              alt="夏至?��?" 
+              src="/logo.png" 
+              alt="夏至原點" 
               className="h-10 md:h-12 w-auto object-contain" 
             />
-            <span className="font-serif text-xl md:text-2xl tracking-widest font-bold hidden sm:block">夏至?��?</span>
+            <span className="font-serif text-xl md:text-2xl tracking-widest font-bold hidden sm:block">夏至原點</span>
           </Link>
         </div>
 
