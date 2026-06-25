@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Noto_Serif_TC, Inter } from 'next/font/google';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import NavigationLoader from '@/components/NavigationLoader';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function FrontendLayout({
   return (
     <html lang="zh-TW" suppressHydrationWarning className={`${notoSerif.variable} ${inter.variable}`} style={{ colorScheme: 'light' }}>
       <body suppressHydrationWarning className="min-h-[100dvh] flex flex-col bg-[#F9F8F6] text-[#3B2D2A] selection:bg-[#E8F3E8] selection:text-[#3B2D2A] font-sans antialiased overflow-x-hidden">
+        <NavigationLoader />
         <Navbar />
         <main className="flex-1 w-full">
           {children}
