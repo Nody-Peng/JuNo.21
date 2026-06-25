@@ -128,3 +128,12 @@
 .delay-200 { animation-delay: 200ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-600 { animation-delay: 600ms; }
+
+/* Hide scrollbar for carousels but keep functionality */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

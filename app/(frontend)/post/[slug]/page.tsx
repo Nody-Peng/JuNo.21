@@ -197,15 +197,6 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
               );
             })}
           </div>
-          <style jsx>{`
-            .hide-scrollbar::-webkit-scrollbar {
-              display: none;
-            }
-            .hide-scrollbar {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-          `}</style>
         </div>
       );
     }
