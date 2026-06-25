@@ -56,15 +56,16 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
     toc: () => {
       if (headings.length === 0) return null;
       return (
-        <div className="my-10 bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm not-prose">
-          <h4 className="text-sm font-bold tracking-widest text-[#8A6A5C] uppercase mb-4 flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+        <div className="my-8 w-fit min-w-[280px] bg-[#FDFBF9] border border-black/5 rounded-xl p-5 md:p-6 shadow-sm not-prose">
+          <h4 className="text-xs font-bold tracking-widest text-[#8A6A5C] uppercase mb-4 flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
             目錄 (Table of Contents)
           </h4>
-          <ul className="flex flex-col gap-3 m-0 p-0 list-none">
+          <ul className="flex flex-col gap-2.5 m-0 p-0 list-none">
             {headings.map((h, i) => (
-              <li key={i} className={`m-0 p-0 ${h.tag === 'h2' ? 'ml-6' : ''}`}>
-                <a href={`#${h.id}`} className="text-[#3B2D2A]/80 hover:text-amber-700 transition-colors text-[15px] md:text-base decoration-amber-700/30 underline-offset-4 hover:underline">
+              <li key={i} className={`m-0 p-0 flex items-start gap-2 ${h.tag === 'h2' ? 'ml-4' : ''}`}>
+                <span className="text-amber-700/40 text-[10px] mt-[5px] shrink-0">●</span>
+                <a href={`#${h.id}`} className="text-[#3B2D2A]/70 hover:text-amber-800 transition-colors text-sm decoration-amber-700/30 underline-offset-4 hover:underline leading-snug">
                   {h.text}
                 </a>
               </li>

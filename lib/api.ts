@@ -1,5 +1,10 @@
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
+const getBaseUrl = () => {
+  if (typeof window !== 'undefined') return '';
+  return SITE_URL;
+};
+
 export interface Category {
   id: string;
   title: string;
@@ -27,7 +32,7 @@ export interface PostDoc {
 // ─── Categories ──────────────────────────────────────────────
 export async function getCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`${SITE_URL}/api/categories?limit=100`, {
+    const res = await fetch(`${getBaseUrl()}/api/categories?limit=100`, {
       next: { revalidate: 60 },
     });
     const data = await res.json();
@@ -39,7 +44,7 @@ export async function getCategories(): Promise<Category[]> {
 
 // ─── Posts ───────────────────────────────────────────────────
 export async function createPost(token: string, postData: Record<string, unknown>) {
-  const res = await fetch(`${SITE_URL}/api/posts`, {
+  const res = await fetch(`${getBaseUrl()}/api/posts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -51,7 +56,7 @@ export async function createPost(token: string, postData: Record<string, unknown
 }
 
 export async function updatePost(token: string, id: string, postData: Record<string, unknown>) {
-  const res = await fetch(`${SITE_URL}/api/posts/${id}`, {
+  const res = await fetch(`${getBaseUrl()}/api/posts/${id}`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -65,7 +70,7 @@ export async function updatePost(token: string, id: string, postData: Record<str
 export async function getMyPosts(token: string, userId: number): Promise<{ docs: PostDoc[] }> {
   try {
     const res = await fetch(
-      `${SITE_URL}/api/posts?where[author][equals]=${userId}&limit=100&sort=-publishedDate&draft=true`,
+      `${getBaseUrl()}/api/posts?where[author][equals]=${userId}&limit=100&sort=-publishedDate&draft=true`,
       {
         headers: { Authorization: `JWT ${token}` },
         cache: 'no-store',
@@ -78,7 +83,7 @@ export async function getMyPosts(token: string, userId: number): Promise<{ docs:
 }
 
 export async function getPostById(token: string, id: string) {
-  const res = await fetch(`${SITE_URL}/api/posts/${id}?draft=true`, {
+  const res = await fetch(`${getBaseUrl()}/api/posts/${id}?draft=true`, {
     headers: { Authorization: `JWT ${token}` },
     cache: 'no-store',
   });
@@ -91,7 +96,7 @@ export async function uploadMedia(token: string, file: File, alt: string): Promi
   formData.append('file', file);
   formData.append('alt', alt || file.name);
 
-  const res = await fetch(`${SITE_URL}/api/media`, {
+  const res = await fetch(`${getBaseUrl()}/api/media`, {
     method: 'POST',
     headers: { Authorization: `JWT ${token}` },
     body: formData,
