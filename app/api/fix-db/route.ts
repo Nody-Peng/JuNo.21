@@ -17,6 +17,7 @@ export async function GET() {
   try {
     await client.connect();
     await client.query(`ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "status" varchar DEFAULT 'draft';`);
+    await client.query(`UPDATE "posts" SET "status" = 'published' WHERE "status" = 'draft';`);
     await client.end();
     
     return NextResponse.json({ success: true, message: 'Database migrated successfully!' });

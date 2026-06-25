@@ -68,7 +68,7 @@ export default function EditClient({ token, userId, categories, post }: Props) {
         category: selectedCategories.length ? selectedCategories : undefined,
         series: series.trim() || undefined,
         heroImage: heroImageId,
-        _status: publish ? 'published' : 'draft',
+        status: publish ? 'published' : 'draft',
       });
 
       if (result?.id) {

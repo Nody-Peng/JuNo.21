@@ -73,7 +73,7 @@ export default function WriteClient({ token, userId, categories }: Props) {
         category: selectedCategories.length ? selectedCategories : undefined,
         series: series.trim() || undefined,
         heroImage: heroImageId || undefined,
-        _status: publish ? 'published' : 'draft',
+        status: publish ? 'published' : 'draft',
       };
 
       const result = await createPost(token, postData);
