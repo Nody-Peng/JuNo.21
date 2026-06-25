@@ -5,14 +5,9 @@ import configPromise from '@/payload.config';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayload({ config: configPromise });
 
-  // Fetch all published posts
+  // Fetch all posts (drafts feature is not enabled so all posts are public)
   const { docs: posts } = await payload.find({
     collection: 'posts',
-    where: {
-      _status: {
-        equals: 'published',
-      },
-    },
     depth: 0,
     limit: 1000,
   });
