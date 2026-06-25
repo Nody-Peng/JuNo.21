@@ -20,10 +20,10 @@ export default function NavigationLoader() {
         target.target !== '_blank'
       ) {
         setIsNavigating(true);
-        // Force the loading screen to show for 1.5s
+        // Force the loading screen to show for 2.5s
         setTimeout(() => {
           setIsNavigating(false);
-        }, 1500);
+        }, 2500);
       }
     };
 
@@ -45,7 +45,7 @@ export default function NavigationLoader() {
           <div 
             className="absolute inset-0 w-full h-full overflow-hidden"
             style={{
-              animation: 'fillUp 1.5s ease-in-out forwards'
+              animation: 'fillUp 2.5s ease-in-out forwards'
             }}
           >
             <img src="/logo.png" alt="Loading" className="absolute bottom-0 w-full h-20 object-contain drop-shadow-md" />
