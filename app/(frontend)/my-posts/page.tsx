@@ -12,8 +12,8 @@ export default async function MyPostsPage() {
   const data = await getMyPosts(auth.token, auth.user.id);
   const posts = data?.docs || [];
 
-  const published = posts.filter(p => p._status === 'published');
-  const drafts    = posts.filter(p => p._status !== 'published');
+  const published = posts.filter(p => p.status === 'published');
+  const drafts    = posts.filter(p => p.status !== 'published');
 
   return (
     <div className="min-h-screen bg-[#F9F8F6] py-16 px-6 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-100/20 via-[#F9F8F6] to-[#F9F8F6]">
