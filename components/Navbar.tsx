@@ -1,12 +1,10 @@
 import Link from 'next/link';
-import { cookies } from 'next/headers';
-import { logoutAction } from '@/lib/auth';
+import { logoutAction, getServerAuth } from '@/lib/auth';
 
 export default async function Navbar() {
-  const cookieStore = await cookies();
-  const isLoggedIn = !!cookieStore.get('writer-token')?.value;
-  const userStr = cookieStore.get('writer-user')?.value;
-  const user = userStr ? JSON.parse(userStr) : null;
+  const auth = await getServerAuth();
+  const isLoggedIn = !!auth;
+  const user = auth?.user;
 
   const navItems = [
     { label: '首頁', link: '/' },

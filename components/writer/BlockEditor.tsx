@@ -131,6 +131,38 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
     });
   }, [focusBlock]);
 
+  const insertBlockAbove = useCallback((beforeId: string, type: BlockType = 'paragraph') => {
+    const newBlock: Block = { id: uid(), type, content: '' };
+    setBlocks(prev => {
+      const idx = prev.findIndex(b => b.id === beforeId);
+      const next = [...prev];
+      next.splice(idx, 0, newBlock);
+      return next;
+    });
+    focusBlock(newBlock.id);
+    return newBlock.id;
+  }, [focusBlock]);
+
+  const moveBlockUp = useCallback((id: string) => {
+    setBlocks(prev => {
+      const idx = prev.findIndex(b => b.id === id);
+      if (idx <= 0) return prev;
+      const next = [...prev];
+      [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      return next;
+    });
+  }, []);
+
+  const moveBlockDown = useCallback((id: string) => {
+    setBlocks(prev => {
+      const idx = prev.findIndex(b => b.id === id);
+      if (idx === -1 || idx >= prev.length - 1) return prev;
+      const next = [...prev];
+      [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      return next;
+    });
+  }, []);
+
   // ── Key handlers ──────────────────────────────────────────
 
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLTextAreaElement>, block: Block) => {
@@ -169,6 +201,7 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
       const before = el.value.slice(0, cursor);
       const after = el.value.slice(cursor);
 
+      el.value = before; // Force sync DOM to prevent UI duplication bug
       updateBlock(block.id, { content: before });
       const newType: BlockType =
         block.type === 'bulletList' || block.type === 'numberedList' ? block.type : 'paragraph';
@@ -215,6 +248,8 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
               prevEl.focus();
               const pos = prevBlock.content.length;
               prevEl.selectionStart = prevEl.selectionEnd = pos;
+              prevEl.value = mergedContent; // Force sync DOM
+              autoResize(prevEl);
             }
           }, 10);
           return updatedPrev;
@@ -363,6 +398,21 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
           >
             +
           </button>
+
+          {/* ── Block Toolbar ── */}
+          <div className={`absolute -right-12 top-0 flex flex-col gap-1 bg-white border border-gray-200 rounded-lg shadow-sm p-1 z-10 transition-opacity ${hoveredBlock === block.id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+             <button onClick={() => moveBlockUp(block.id)} className="w-8 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-gray-500 font-bold" title="上移 (Move Up)">↑</button>
+             <button onClick={() => moveBlockDown(block.id)} className="w-8 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-gray-500 font-bold" title="下移 (Move Down)">↓</button>
+             <div className="w-full h-px bg-gray-100 my-0.5"></div>
+             <button onClick={() => insertBlockAbove(block.id)} className="w-8 h-7 flex items-center justify-center hover:bg-amber-50 text-amber-600 rounded text-xs font-bold" title="在上方插入 (Insert Above)">+↑</button>
+             <button onClick={() => insertBlockAfter(block.id)} className="w-8 h-7 flex items-center justify-center hover:bg-amber-50 text-amber-600 rounded text-xs font-bold" title="在下方插入 (Insert Below)">+↓</button>
+             {block.type !== 'paragraph' && (
+               <>
+                 <div className="w-full h-px bg-gray-100 my-0.5"></div>
+                 <button onClick={() => deleteBlock(block.id)} className="w-8 h-7 flex items-center justify-center hover:bg-red-50 text-red-500 rounded text-xs" title="刪除區塊 (Delete Block)">🗑️</button>
+               </>
+             )}
+          </div>
 
           {/* ── Block Type Label ── */}
           {hoveredBlock === block.id && block.type !== 'paragraph' && block.type !== 'divider' && (

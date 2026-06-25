@@ -3,6 +3,7 @@ import { getPayload } from 'payload';
 import configPromise from '@/payload.config';
 import { RichText, JSXConvertersFunction } from '@payloadcms/richtext-lexical/react';
 import type { Metadata } from 'next';
+import ProductCarousel from '@/components/ProductCarousel';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -135,75 +136,7 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
     product: ({ node }: { node: any }) => {
       const { sectionTitle, items } = node.fields;
       if (!items || items.length === 0) return null;
-
-      return (
-        <div className="not-prose my-16 w-full">
-          {sectionTitle && (
-            <h3 className="text-2xl font-serif text-[#3B2D2A] mb-8 px-2 font-bold tracking-wide border-l-4 border-amber-700 pl-4">
-              {sectionTitle}
-            </h3>
-          )}
-          
-          <div className="w-full overflow-x-auto pb-8 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory flex gap-6 hide-scrollbar">
-            {items.map((item: any, idx: number) => {
-              const { productName, price, description, link, image } = item;
-              const imageUrl = typeof image === 'object' && image?.url ? image.url : 'https://picsum.photos/seed/product/600/600';
-              const imageAlt = typeof image === 'object' && image?.alt ? image.alt : productName;
-
-              return (
-                <div 
-                  key={idx} 
-                  className="shrink-0 w-[85vw] md:w-[400px] lg:w-[450px] snap-center bg-white/80 backdrop-blur-2xl border border-black/5 shadow-[0_20px_60px_rgba(0,0,0,0.04)] rounded-[2rem] overflow-hidden flex flex-col transition-transform hover:-translate-y-1 duration-300"
-                >
-                  {/* Image Section */}
-                  <div className="w-full relative aspect-square bg-stone-100 overflow-hidden">
-                    <img 
-                      src={imageUrl} 
-                      alt={imageAlt} 
-                      className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
-                    />
-                  </div>
-
-                  {/* Content Section */}
-                  <div className="w-full p-8 flex flex-col flex-1 bg-white/50 relative">
-                    <span className="inline-block text-[10px] font-bold tracking-widest text-[#8A6A5C] mb-3 uppercase">
-                      Editor's Pick
-                    </span>
-                    
-                    <h4 className="text-xl font-serif text-[#3B2D2A] leading-snug mb-2">
-                      {productName}
-                    </h4>
-                    
-                    {price && (
-                      <p className="text-sm font-sans font-medium text-[#5C4F4A] mb-4">
-                        {price}
-                      </p>
-                    )}
-                    
-                    <div className="text-[#3B2D2A]/80 leading-relaxed font-sans mb-6 text-sm whitespace-pre-wrap flex-1">
-                      {description}
-                    </div>
-                    
-                    {link && (
-                      <a 
-                        href={link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="group w-full flex items-center justify-center gap-3 bg-[#2C2422] text-[#F9F8F6] px-6 py-3 rounded-xl hover:bg-[#8A6A5C] transition-colors duration-300 shadow-sm font-sans text-xs font-medium tracking-widest mt-auto"
-                      >
-                        查看詳情
-                        <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                        </svg>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      );
+      return <ProductCarousel items={items} sectionTitle={sectionTitle} />;
     }
   }
 });
