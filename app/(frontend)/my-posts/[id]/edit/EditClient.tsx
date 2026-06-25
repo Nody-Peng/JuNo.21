@@ -122,7 +122,12 @@ export default function EditClient({ token, userId, categories, post }: Props) {
                 <span className="text-white text-sm">更換封面</span>
               </div>
             </div>
-          ) : (<><span className="text-3xl">🖼️</span><span className="text-sm">點擊或拖曳上傳封面圖片</span></>)}
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-gray-400 group-hover:text-amber-600 transition-colors">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-3 opacity-60"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <span className="text-[13px] font-medium tracking-widest uppercase">Click or Drag to Upload Cover Image</span>
+            </div>
+          )}
         </div>
         <input ref={coverInputRef} type="file" accept="image/*" onChange={handleCoverChange} className="hidden" />
 

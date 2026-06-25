@@ -25,6 +25,9 @@ const BLOCK_STYLE: Record<BlockType, string> = {
   divider:      '',
   bulletList:   'text-[17px] text-gray-800 leading-relaxed',
   numberedList: 'text-[17px] text-gray-800 leading-relaxed',
+  map:          'text-[14px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
+  video:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
+  product:      'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
 };
 
 const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
@@ -37,6 +40,9 @@ const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
   divider:      '',
   bulletList:   '列表項目',
   numberedList: '列表項目',
+  map:          '貼上 Google Maps Embed HTML...',
+  video:        '貼上 YouTube 或 Vimeo 網址...',
+  product:      '', // Handled by custom UI
 };
 
 // ─── Markdown shortcut detection ─────────────────────────────
@@ -163,7 +169,7 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
       const newType: BlockType =
         block.type === 'bulletList' || block.type === 'numberedList' ? block.type : 'paragraph';
       const newId = uid();
-      const newBlock: Block = { id: newId, type: newType, content: after };
+      const newBlock: Block = { id: newId, type: newType, content: after, data: block.data };
 
       setBlocks(prev => {
         const idx = prev.findIndex(b => b.id === block.id);
@@ -383,27 +389,82 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
                 </span>
               )}
 
-              <textarea
-                ref={el => {
-                  if (el) textareaRefs.current.set(block.id, el);
-                  else textareaRefs.current.delete(block.id);
-                }}
-                defaultValue={block.content}
-                placeholder={BLOCK_PLACEHOLDER[block.type]}
-                rows={1}
-                onKeyDown={e => handleKeyDown(e, block)}
-                onChange={e => handleInput(e, block)}
-                onFocus={e => autoResize(e.target)}
-                className={[
-                  'w-full resize-none overflow-hidden outline-none bg-transparent placeholder-gray-300',
-                  'border-none focus:ring-0 p-0',
-                  BLOCK_STYLE[block.type],
-                  (block.type === 'bulletList' || block.type === 'numberedList') ? 'pl-6' : '',
-                  block.type === 'code' ? 'w-full' : '',
-                ].join(' ')}
-                style={{ minHeight: '1.5em' }}
-                spellCheck={block.type !== 'code'}
-              />
+              {block.type === 'map' && <div className="text-xs font-semibold text-gray-500 mb-1 tracking-wider uppercase">📍 Google Maps Embed HTML</div>}
+              {block.type === 'video' && <div className="text-xs font-semibold text-gray-500 mb-1 tracking-wider uppercase">▶️ Video URL</div>}
+
+              {block.type === 'product' ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🛍️</span>
+                    <span className="text-xs font-bold text-gray-600 tracking-wider uppercase">商品卡片 (Product Showcase)</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="商品名稱"
+                    value={block.data?.productName || ''}
+                    onChange={e => updateBlock(block.id, { data: { ...block.data, productName: e.target.value } })}
+                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder="價格或售價 (例如：NT$ 1,200)"
+                    value={block.data?.price || ''}
+                    onChange={e => updateBlock(block.id, { data: { ...block.data, price: e.target.value } })}
+                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                  />
+                  <textarea
+                    placeholder="推薦理由 / 商品描述"
+                    value={block.data?.description || ''}
+                    onChange={e => {
+                      updateBlock(block.id, { data: { ...block.data, description: e.target.value } });
+                      autoResize(e.target);
+                    }}
+                    rows={2}
+                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400 resize-none"
+                  />
+                  <input
+                    type="text"
+                    placeholder="購買或介紹連結 (URL)"
+                    value={block.data?.link || ''}
+                    onChange={e => updateBlock(block.id, { data: { ...block.data, link: e.target.value } })}
+                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                  />
+                  <div className="text-xs text-gray-400 mt-1">注意：圖片請到後台編輯文章時上傳。</div>
+                  {/* Keep a hidden textarea so navigation logic still works */}
+                  <textarea
+                    ref={el => {
+                      if (el) textareaRefs.current.set(block.id, el);
+                      else textareaRefs.current.delete(block.id);
+                    }}
+                    value=""
+                    onChange={() => {}}
+                    onKeyDown={e => handleKeyDown(e, block)}
+                    className="w-0 h-0 opacity-0 absolute"
+                  />
+                </div>
+              ) : (
+                <textarea
+                  ref={el => {
+                    if (el) textareaRefs.current.set(block.id, el);
+                    else textareaRefs.current.delete(block.id);
+                  }}
+                  defaultValue={block.content}
+                  placeholder={BLOCK_PLACEHOLDER[block.type]}
+                  rows={1}
+                  onKeyDown={e => handleKeyDown(e, block)}
+                  onChange={e => handleInput(e, block)}
+                  onFocus={e => autoResize(e.target)}
+                  className={[
+                    'w-full resize-none overflow-hidden outline-none bg-transparent placeholder-gray-300 transition-colors',
+                    'border-none focus:ring-0 p-0',
+                    BLOCK_STYLE[block.type],
+                    (block.type === 'bulletList' || block.type === 'numberedList') ? 'pl-6' : '',
+                    (block.type === 'code' || block.type === 'map' || block.type === 'video') ? 'w-full focus:bg-white focus:border-amber-200 focus:shadow-[0_4px_20px_rgba(0,0,0,0.03)]' : '',
+                  ].join(' ')}
+                  style={{ minHeight: '1.5em' }}
+                  spellCheck={block.type !== 'code' && block.type !== 'map' && block.type !== 'video'}
+                />
+              )}
             </div>
           )}
         </div>

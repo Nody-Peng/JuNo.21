@@ -25,6 +25,9 @@ const CodeIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="non
 const DividerIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const ListIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
 const ListOrderedIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>;
+const MapIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>;
+const VideoIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>;
+const ProductIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>;
 
 export const SLASH_ITEMS: SlashItem[] = [
   { type: 'paragraph',    icon: <Icon><ParagraphIcon /></Icon>,   label: '文字段落',  desc: '一般段落文字',   shortcut: '' },
@@ -36,6 +39,9 @@ export const SLASH_ITEMS: SlashItem[] = [
   { type: 'divider',      icon: <Icon><DividerIcon /></Icon>,   label: '分隔線',    desc: '水平分隔線',      shortcut: '---' },
   { type: 'bulletList',   icon: <Icon><ListIcon /></Icon>,   label: '無序列表',  desc: '帶圓點的清單',    shortcut: '-' },
   { type: 'numberedList', icon: <Icon><ListOrderedIcon /></Icon>,  label: '有序列表',  desc: '帶數字的清單',    shortcut: '1.' },
+  { type: 'map',          icon: <Icon><MapIcon /></Icon>,  label: '地圖',      desc: '嵌入 Google Maps', shortcut: '' },
+  { type: 'video',        icon: <Icon><VideoIcon /></Icon>,label: '影片',      desc: '嵌入 YouTube 影片', shortcut: '' },
+  { type: 'product',      icon: <Icon><ProductIcon /></Icon>,label: '商品卡片', desc: '嵌入推薦商品區塊', shortcut: '' },
 ];
 
 interface Props {
@@ -62,8 +68,22 @@ export default function SlashMenu({ query, position, onSelect, onClose }: Props)
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     };
     const keyHandler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(s => (s + 1) % filtered.length); }
-      if (e.key === 'ArrowUp')   { e.preventDefault(); setSelected(s => (s - 1 + filtered.length) % filtered.length); }
+      if (e.key === 'ArrowDown') { 
+        e.preventDefault(); 
+        setSelected(s => {
+          const next = (s + 1) % filtered.length;
+          document.getElementById(`slash-item-${next}`)?.scrollIntoView({ block: 'nearest' });
+          return next;
+        }); 
+      }
+      if (e.key === 'ArrowUp') { 
+        e.preventDefault(); 
+        setSelected(s => {
+          const prev = (s - 1 + filtered.length) % filtered.length;
+          document.getElementById(`slash-item-${prev}`)?.scrollIntoView({ block: 'nearest' });
+          return prev;
+        }); 
+      }
       if (e.key === 'Enter')     { e.preventDefault(); if (filtered[selected]) onSelect(filtered[selected].type); }
       if (e.key === 'Escape')    onClose();
     };
@@ -77,36 +97,50 @@ export default function SlashMenu({ query, position, onSelect, onClose }: Props)
 
   if (!filtered.length) return null;
 
+  // Ensure the menu doesn't go offscreen
+  useEffect(() => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      if (rect.bottom > windowHeight) {
+        ref.current.style.top = `${Math.max(10, position.top - rect.height - 30)}px`;
+      }
+    }
+  }, [position.top, filtered.length]);
+
   return (
     <div
       ref={ref}
       style={{ top: position.top, left: position.left }}
-      className="fixed z-[9999] w-[280px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-black/5 overflow-hidden py-1.5"
+      className="fixed z-[9999] w-[280px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-black/5 overflow-hidden py-1.5 flex flex-col max-h-[350px]"
     >
-      <p className="px-3.5 pt-1 pb-2 text-[10px] font-semibold text-[#3B2D2A]/35 tracking-[0.12em] uppercase">
+      <p className="px-3.5 pt-1 pb-2 text-[10px] font-semibold text-[#3B2D2A]/35 tracking-[0.12em] uppercase shrink-0">
         區塊類型
       </p>
-      {filtered.map((item, idx) => (
-        <button
-          key={idx}
-          onMouseDown={(e) => { e.preventDefault(); onSelect(item.type); }}
-          onMouseEnter={() => setSelected(idx)}
-          className={`group w-full flex items-center gap-3 px-3 py-2 transition-colors text-left ${
-            selected === idx ? 'bg-[#F5F2EE]' : 'hover:bg-[#F5F2EE]/60'
-          }`}
-        >
-          {item.icon}
-          <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-medium text-[#3B2D2A]">{item.label}</div>
-            <div className="text-[11px] text-[#3B2D2A]/40 mt-px">{item.desc}</div>
-          </div>
-          {item.shortcut && (
-            <kbd className="text-[10px] text-[#3B2D2A]/25 font-mono bg-[#3B2D2A]/5 px-1.5 py-0.5 rounded shrink-0">
-              {item.shortcut}
-            </kbd>
-          )}
-        </button>
-      ))}
+      <div className="overflow-y-auto custom-scrollbar flex-1">
+        {filtered.map((item, idx) => (
+          <button
+            key={idx}
+            id={`slash-item-${idx}`}
+            onMouseDown={(e) => { e.preventDefault(); onSelect(item.type); }}
+            onMouseEnter={() => setSelected(idx)}
+            className={`group w-full flex items-center gap-3 px-3 py-2 transition-colors text-left ${
+              selected === idx ? 'bg-[#F5F2EE]' : 'hover:bg-[#F5F2EE]/60'
+            }`}
+          >
+            {item.icon}
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-medium text-[#3B2D2A]">{item.label}</div>
+              <div className="text-[11px] text-[#3B2D2A]/40 mt-px">{item.desc}</div>
+            </div>
+            {item.shortcut && (
+              <kbd className="text-[10px] text-[#3B2D2A]/25 font-mono bg-[#3B2D2A]/5 px-1.5 py-0.5 rounded shrink-0">
+                {item.shortcut}
+              </kbd>
+            )}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

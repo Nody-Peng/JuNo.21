@@ -9,12 +9,16 @@ export type BlockType =
   | 'code'
   | 'divider'
   | 'bulletList'
-  | 'numberedList';
+  | 'numberedList'
+  | 'map'
+  | 'video'
+  | 'product';
 
 export interface Block {
   id: string;
   type: BlockType;
   content: string;
+  data?: any;
 }
 
 // ─── Block → Lexical ─────────────────────────────────────────
@@ -59,7 +63,6 @@ function makeListItem(text: string) {
 }
 
 export function blocksToLexical(blocks: Block[]) {
-  // Group consecutive list items
   const nodes: unknown[] = [];
   let i = 0;
 
@@ -89,6 +92,15 @@ export function blocksToLexical(blocks: Block[]) {
       case 'code':     nodes.push(makeCode(block.content)); break;
       case 'divider':
         nodes.push({ type: 'horizontalrule', version: 1 });
+        break;
+      case 'map':
+        nodes.push({ type: 'block', fields: { blockType: 'map', embedHtml: block.content }, format: '', version: 2 });
+        break;
+      case 'video':
+        nodes.push({ type: 'block', fields: { blockType: 'video', url: block.content }, format: '', version: 2 });
+        break;
+      case 'product':
+        nodes.push({ type: 'block', fields: { blockType: 'product', ...(block.data || {}) }, format: '', version: 2 });
         break;
       default: nodes.push(makeParagraph(block.content));
     }
@@ -133,6 +145,15 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
       for (const item of (node.children as Record<string, unknown>[]) || []) {
         const itemText = extractText((item.children as { text?: string }[]) || []);
         blocks.push({ id: uid(), type: listType, content: itemText });
+      }
+    } else if (node.type === 'block') {
+      const fields = node.fields as any;
+      if (fields?.blockType === 'map') {
+        blocks.push({ id: uid(), type: 'map', content: fields.embedHtml || '' });
+      } else if (fields?.blockType === 'video') {
+        blocks.push({ id: uid(), type: 'video', content: fields.url || '' });
+      } else if (fields?.blockType === 'product') {
+        blocks.push({ id: uid(), type: 'product', content: '', data: fields });
       }
     } else {
       blocks.push({ id: uid(), type: 'paragraph', content: text });
