@@ -11,6 +11,7 @@ import SlashMenu from './SlashMenu';
 interface Props {
   initialBlocks?: Block[];
   onChange: (blocks: Block[]) => void;
+  onUploadImage?: (file: File) => Promise<string | null>;
 }
 
 // ─── Block style config ──────────────────────────────────────
@@ -66,7 +67,7 @@ function detectMarkdown(text: string): BlockType | null {
 
 // ─── Main Component ──────────────────────────────────────────
 
-export default function BlockEditor({ initialBlocks, onChange }: Props) {
+export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: Props) {
   const [blocks, setBlocks] = useState<Block[]>(
     initialBlocks?.length ? initialBlocks : [{ id: uid(), type: 'paragraph', content: '' }],
   );
@@ -400,7 +401,7 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
           </button>
 
           {/* ── Block Toolbar ── */}
-          <div className={`absolute -right-12 top-0 flex flex-col gap-1 bg-white border border-gray-200 rounded-lg shadow-sm p-1 z-10 transition-opacity ${hoveredBlock === block.id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <div className={`absolute right-1 top-1 flex flex-col gap-1 bg-white border border-gray-200 rounded-lg shadow-md p-1 z-10 transition-opacity ${hoveredBlock === block.id ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
              <button onClick={() => moveBlockUp(block.id)} className="w-8 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-gray-500 font-bold" title="上移 (Move Up)">↑</button>
              <button onClick={() => moveBlockDown(block.id)} className="w-8 h-7 flex items-center justify-center hover:bg-gray-100 rounded text-gray-500 font-bold" title="下移 (Move Down)">↓</button>
              <div className="w-full h-px bg-gray-100 my-0.5"></div>
@@ -485,14 +486,42 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
                     rows={2}
                     className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400 resize-none"
                   />
-                  <input
-                    type="text"
-                    placeholder="購買或介紹連結 (URL)"
-                    value={block.data?.link || ''}
-                    onChange={e => updateBlock(block.id, { data: { ...block.data, link: e.target.value } })}
-                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
-                  />
-                  <div className="text-xs text-gray-400 mt-1">注意：圖片請到後台編輯文章時上傳。</div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="購買或介紹連結 (URL)"
+                      value={block.data?.link || ''}
+                      onChange={e => updateBlock(block.id, { data: { ...block.data, link: e.target.value } })}
+                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      placeholder="圖片網址 (可貼上網址或上傳)"
+                      value={block.data?.image?.url || ''}
+                      onChange={e => updateBlock(block.id, { data: { ...block.data, image: { url: e.target.value, alt: block.data.productName } } })}
+                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                    />
+                    {onUploadImage && (
+                      <label className="cursor-pointer bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors">
+                        上傳圖片
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const url = await onUploadImage(file);
+                            if (url) {
+                              updateBlock(block.id, { data: { ...block.data, image: { url, alt: block.data.productName } } });
+                            }
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
                   {/* Keep a hidden textarea so navigation logic still works */}
                   <textarea
                     ref={el => {
@@ -620,17 +649,39 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
                                   rows={1}
                                   className="w-full resize-none bg-transparent outline-none text-gray-800 min-h-[1.5em]"
                                 />
-                                <input 
-                                  type="text" 
-                                  placeholder="圖片網址 (可選)"
-                                  value={cell.imageUrl || ''}
-                                  onChange={e => {
-                                    const newData = { ...block.data };
-                                    newData.rows[rIdx].cells[cIdx].imageUrl = e.target.value;
-                                    updateBlock(block.id, { data: newData });
-                                  }}
-                                  className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full outline-none focus:border-amber-400"
-                                />
+                                <div className="flex gap-2">
+                                  <input 
+                                    type="text" 
+                                    placeholder="圖片網址 (可選)"
+                                    value={cell.imageUrl || ''}
+                                    onChange={e => {
+                                      const newData = { ...block.data };
+                                      newData.rows[rIdx].cells[cIdx].imageUrl = e.target.value;
+                                      updateBlock(block.id, { data: newData });
+                                    }}
+                                    className="flex-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1 outline-none focus:border-amber-400"
+                                  />
+                                  {onUploadImage && (
+                                    <label className="cursor-pointer bg-white text-gray-500 hover:text-amber-600 border border-gray-200 rounded px-2 py-1 text-xs flex items-center justify-center transition-colors" title="上傳圖片">
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={async e => {
+                                          const file = e.target.files?.[0];
+                                          if (!file) return;
+                                          const url = await onUploadImage(file);
+                                          if (url) {
+                                            const newData = { ...block.data };
+                                            newData.rows[rIdx].cells[cIdx].imageUrl = url;
+                                            updateBlock(block.id, { data: newData });
+                                          }
+                                        }}
+                                      />
+                                    </label>
+                                  )}
+                                </div>
                               </div>
                             </td>
                           ))}

@@ -225,7 +225,19 @@ export default function WriteClient({ token, userId, categories }: Props) {
 
         {/* ── Block Editor ── */}
         <div className="pl-8">
-          <BlockEditor onChange={setBlocks} />
+          <BlockEditor 
+            onChange={setBlocks} 
+            onUploadImage={async (file) => {
+              try {
+                const res = await uploadMedia(token, file, file.name);
+                return res?.url || null;
+              } catch (e) {
+                console.error(e);
+                alert('圖片上傳失敗');
+                return null;
+              }
+            }}
+          />
         </div>
 
         {/* ── Bottom padding ── */}

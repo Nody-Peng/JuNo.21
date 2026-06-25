@@ -160,7 +160,20 @@ export default function EditClient({ token, userId, categories, post }: Props) {
         <hr className="border-gray-100 mb-10" />
 
         <div className="pl-8">
-          <BlockEditor initialBlocks={blocks} onChange={setBlocks} />
+          <BlockEditor 
+            initialBlocks={blocks} 
+            onChange={setBlocks} 
+            onUploadImage={async (file) => {
+              try {
+                const res = await uploadMedia(token, file, file.name);
+                return res?.url || null;
+              } catch (e) {
+                console.error(e);
+                alert('圖片上傳失敗');
+                return null;
+              }
+            }}
+          />
         </div>
         <div className="h-40" />
       </div>
