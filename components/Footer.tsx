@@ -15,9 +15,9 @@ export default function Footer() {
           </p>
         </div>
         <div className="flex flex-col md:items-end gap-4 text-sm font-sans font-medium tracking-widest">
-          <a href="#" className="hover:text-white transition-colors">Instagram</a>
-          <a href="#" className="hover:text-white transition-colors">Facebook</a>
-          <a href="#" className="hover:text-white transition-colors">聯絡我</a>
+          <a href="https://www.instagram.com/juuunooo.21/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Instagram</a>
+          <a href="https://www.threads.com/@juuunooo.21" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Threads</a>
+          <a href="mailto:juno21.tw@gmail.com" className="hover:text-white transition-colors">聯絡我</a>
         </div>
       </div>
       <div className="max-w-[1400px] mx-auto mt-16 pt-8 border-t border-[#4e3d39] text-xs text-[#F9F8F6]/40 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4 tracking-widest">
