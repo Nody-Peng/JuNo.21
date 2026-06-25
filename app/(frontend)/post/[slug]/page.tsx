@@ -76,10 +76,10 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
     table: ({ node }: { node: any }) => {
       const { title, header, rows } = node.fields;
       return (
-        <div className="my-10 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm not-prose">
-          {title && <div className="bg-gray-50 px-4 py-3 font-medium text-gray-800 border-b border-gray-200">{title}</div>}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[15px] min-w-[500px]">
+        <div className="my-10 w-full rounded-xl border border-gray-200 bg-white shadow-sm not-prose">
+          {title && <div className="bg-gray-50 px-4 py-3 font-medium text-gray-800 border-b border-gray-200 rounded-t-xl">{title}</div>}
+          <div className="overflow-x-auto rounded-b-xl hide-scrollbar">
+            <table className="w-full text-left text-[15px] min-w-[700px]">
               {header && header.length > 0 && (
                 <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">
                   <tr>
@@ -128,64 +128,84 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
       );
     },
     product: ({ node }: { node: any }) => {
-      const { productName, price, description, link, image } = node.fields;
-      const imageUrl = typeof image === 'object' && image?.url ? image.url : 'https://picsum.photos/seed/product/600/600';
-      const imageAlt = typeof image === 'object' && image?.alt ? image.alt : productName;
+      const { sectionTitle, items } = node.fields;
+      if (!items || items.length === 0) return null;
 
       return (
-        <div className="not-prose my-16 w-full bg-white/80 backdrop-blur-2xl border border-black/5 shadow-[0_20px_60px_rgba(0,0,0,0.04)] rounded-[2rem] overflow-hidden flex flex-col md:flex-row items-stretch">
-          
-          {/* Image Section */}
-          <div className="w-full md:w-2/5 relative h-[350px] md:h-auto bg-stone-100 shrink-0">
-            <img 
-              src={imageUrl} 
-              alt={imageAlt} 
-              className="absolute inset-0 w-full h-full object-cover" 
-            />
-          </div>
-
-          {/* Content Section */}
-          <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-center bg-white/50 relative">
-            {/* Decorative Top Right Badge */}
-            <div className="absolute top-8 right-8 text-[#8A6A5C] opacity-30">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
-              </svg>
-            </div>
-
-            <span className="inline-block text-xs font-bold tracking-widest text-[#8A6A5C] mb-4 uppercase">
-              Editor's Pick
-            </span>
-            
-            <h3 className="text-2xl md:text-3xl font-serif text-[#3B2D2A] leading-snug mb-2 text-balance">
-              {productName}
+        <div className="not-prose my-16 w-full">
+          {sectionTitle && (
+            <h3 className="text-2xl font-serif text-[#3B2D2A] mb-8 px-2 font-bold tracking-wide border-l-4 border-amber-700 pl-4">
+              {sectionTitle}
             </h3>
-            
-            {price && (
-              <p className="text-lg font-sans font-medium text-[#5C4F4A] mb-6">
-                {price}
-              </p>
-            )}
-            
-            <div className="text-[#3B2D2A]/80 leading-relaxed font-sans mb-8 text-sm md:text-base whitespace-pre-wrap">
-              {description}
-            </div>
-            
-            {link && (
-              <a 
-                href={link} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="group w-fit flex items-center gap-3 bg-[#2C2422] text-[#F9F8F6] px-8 py-3.5 rounded-full hover:bg-[#8A6A5C] transition-colors duration-300 shadow-md font-sans text-sm font-medium tracking-widest"
-              >
-                查看詳情
-                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </a>
-            )}
-          </div>
+          )}
           
+          <div className="w-full overflow-x-auto pb-8 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory flex gap-6 hide-scrollbar">
+            {items.map((item: any, idx: number) => {
+              const { productName, price, description, link, image } = item;
+              const imageUrl = typeof image === 'object' && image?.url ? image.url : 'https://picsum.photos/seed/product/600/600';
+              const imageAlt = typeof image === 'object' && image?.alt ? image.alt : productName;
+
+              return (
+                <div 
+                  key={idx} 
+                  className="shrink-0 w-[85vw] md:w-[400px] lg:w-[450px] snap-center bg-white/80 backdrop-blur-2xl border border-black/5 shadow-[0_20px_60px_rgba(0,0,0,0.04)] rounded-[2rem] overflow-hidden flex flex-col transition-transform hover:-translate-y-1 duration-300"
+                >
+                  {/* Image Section */}
+                  <div className="w-full relative aspect-square bg-stone-100 overflow-hidden">
+                    <img 
+                      src={imageUrl} 
+                      alt={imageAlt} 
+                      className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" 
+                    />
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="w-full p-8 flex flex-col flex-1 bg-white/50 relative">
+                    <span className="inline-block text-[10px] font-bold tracking-widest text-[#8A6A5C] mb-3 uppercase">
+                      Editor's Pick
+                    </span>
+                    
+                    <h4 className="text-xl font-serif text-[#3B2D2A] leading-snug mb-2">
+                      {productName}
+                    </h4>
+                    
+                    {price && (
+                      <p className="text-sm font-sans font-medium text-[#5C4F4A] mb-4">
+                        {price}
+                      </p>
+                    )}
+                    
+                    <div className="text-[#3B2D2A]/80 leading-relaxed font-sans mb-6 text-sm whitespace-pre-wrap flex-1">
+                      {description}
+                    </div>
+                    
+                    {link && (
+                      <a 
+                        href={link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="group w-full flex items-center justify-center gap-3 bg-[#2C2422] text-[#F9F8F6] px-6 py-3 rounded-xl hover:bg-[#8A6A5C] transition-colors duration-300 shadow-sm font-sans text-xs font-medium tracking-widest mt-auto"
+                      >
+                        查看詳情
+                        <svg className="w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <style jsx>{`
+            .hide-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+            .hide-scrollbar {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
         </div>
       );
     }

@@ -36,37 +36,53 @@ const VideoBlock: Block = {
 
 const ProductBlock: Block = {
   slug: 'product',
-  labels: { singular: '質感選物卡片 (Product Showcase)', plural: '選物卡片 (Products)' },
+  labels: { singular: '質感選物選品集 (Products Carousel)', plural: '選物選品集 (Products)' },
   fields: [
     {
-      name: 'productName',
+      name: 'sectionTitle',
       type: 'text',
-      required: true,
-      label: '商品名稱',
+      label: '推薦區塊標題 (例如：虎航登機箱推薦)',
     },
     {
-      name: 'price',
-      type: 'text',
-      label: '價格或參考售價 (例如：NT$ 1,200)',
-    },
-    {
-      name: 'description',
-      type: 'textarea',
-      required: true,
-      label: '推薦理由 / 商品描述',
-    },
-    {
-      name: 'link',
-      type: 'text',
-      label: '購買或介紹連結 (URL)',
-    },
-    {
-      name: 'image',
-      type: 'upload',
-      relationTo: 'media',
-      required: true,
-      label: '商品圖片 (建議去背或正方形)',
-    },
+      name: 'items',
+      type: 'array',
+      label: '商品列表',
+      minRows: 1,
+      fields: [
+        {
+          name: 'productName',
+          type: 'text',
+          required: true,
+          label: '商品名稱',
+        },
+        {
+          name: 'price',
+          type: 'text',
+          label: '價格或參考售價 (例如：NT$ 1,200)',
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          required: true,
+          label: '推薦理由 / 商品描述',
+        },
+        {
+          name: 'link',
+          type: 'text',
+          label: '購買或介紹連結 (URL)',
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: true,
+          label: '商品圖片',
+          admin: {
+            description: '建議上傳去背或正方形圖片 (建議長寬比 1:1，例如 600x600)',
+          },
+        },
+      ],
+    }
   ],
 };
 
@@ -241,7 +257,7 @@ export default buildConfig({
           relationTo: 'media',
           admin: {
             position: 'sidebar',
-            description: '上傳此文章的封面圖片',
+            description: '上傳此文章的封面圖片 (建議長寬比 16:9，例如 1200x675)',
           },
         },
         {
@@ -391,11 +407,11 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+    push: true, // Force push schema changes (like adding _status) to DB in production
   }),
   
   plugins: (() => {
     const token = process.env.BLOB_READ_WRITE_TOKEN;
-    // Only initialize if token matches the required format: vercel_blob_rw_<storeId>_<random>
     if (token && /^vercel_blob_rw_[A-Za-z0-9]+_[A-Za-z0-9]+$/.test(token)) {
       return [
         vercelBlobStorage({
