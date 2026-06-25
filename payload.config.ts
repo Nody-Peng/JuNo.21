@@ -329,13 +329,8 @@ export default buildConfig({
     if (token && /^vercel_blob_rw_[A-Za-z0-9]+_[A-Za-z0-9]+$/.test(token)) {
       return [
         vercelBlobStorage({
-          enabled: true,
           collections: {
-            media: {
-              generateFileURL: ({ filename, prefix }) => {
-                return `https://public.blob.vercel-storage.com/${prefix ? prefix + '/' : ''}${filename}`;
-              },
-            },
+            media: true,
           },
           token,
         }),
