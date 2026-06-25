@@ -94,7 +94,7 @@ export async function getPostById(token: string, id: string) {
 export async function uploadMedia(token: string, file: File, alt: string): Promise<MediaDoc> {
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('alt', alt || file.name);
+  formData.append('_payload', JSON.stringify({ alt: alt || file.name }));
 
   const res = await fetch(`${getBaseUrl()}/api/media`, {
     method: 'POST',
