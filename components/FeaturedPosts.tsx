@@ -23,7 +23,7 @@ export default function FeaturedPosts({ posts }: { posts: any[] }) {
               className="group flex flex-col bg-white p-8 rounded-3xl shadow-sm border border-stone-100 hover:shadow-lg hover:border-amber-200 transition-all duration-300 hover:-translate-y-1 relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-200 to-orange-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <h3 className="text-2xl font-bold text-stone-800 mb-4 group-hover:text-amber-700 transition-colors duration-200">
+              <h3 className="text-2xl font-bold text-stone-800 mb-4 group-hover:text-amber-700 transition-colors duration-200 whitespace-pre-line">
                 {post.title}
               </h3>
               {post.excerpt && (

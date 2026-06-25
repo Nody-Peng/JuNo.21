@@ -267,7 +267,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             <span className="text-amber-700/80">{primaryCategory}</span>
             {seriesTag && <span className="text-[#3B2D2A]/40">{seriesTag}</span>}
           </div>
-          <h1 className="text-4xl md:text-5xl font-serif text-[#3B2D2A] leading-[1.3] mb-10 text-balance">
+          <h1 className="text-4xl md:text-5xl font-serif text-[#3B2D2A] leading-[1.3] mb-10 text-balance whitespace-pre-line">
             {post.title}
           </h1>
           <div className="w-16 h-px bg-[#3B2D2A]/20 mx-auto"></div>

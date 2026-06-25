@@ -25,7 +25,7 @@ export default function PostList({ posts }: { posts: any[] }) {
             <div className="text-xs text-stone-400 mb-4 font-medium">
               {post.publishedDate ? formatDate(post.publishedDate) : '近期'}
             </div>
-            <h3 className="text-xl font-semibold text-stone-800 mb-3 group-hover:text-stone-500 transition-colors duration-200">
+            <h3 className="text-xl font-semibold text-stone-800 mb-3 group-hover:text-stone-500 transition-colors duration-200 whitespace-pre-line">
               {post.title}
             </h3>
             {post.excerpt && (

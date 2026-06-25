@@ -87,7 +87,7 @@ export default function BlogFilter({ posts, categories }: { posts: Post[], categ
                     {seriesTag && <span>{seriesTag}</span>}
                   </div>
                   
-                  <h3 className="text-2xl font-serif text-[#3B2D2A] mb-3 group-hover:text-amber-800 transition-colors leading-[1.3]">
+                  <h3 className="text-2xl font-serif text-[#3B2D2A] mb-3 group-hover:text-amber-800 transition-colors leading-[1.3] whitespace-pre-line">
                     {post.title}
                   </h3>
                   
