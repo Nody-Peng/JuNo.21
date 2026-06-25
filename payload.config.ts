@@ -209,7 +209,13 @@ export default buildConfig({
     {
       slug: 'posts',
       access: {
-        read: () => true,
+        read: ({ req }) => {
+          if (req.user) return true;
+          return { _status: { equals: 'published' } };
+        },
+      },
+      versions: {
+        drafts: true,
       },
       admin: {
         useAsTitle: 'title',
