@@ -28,6 +28,8 @@ const BLOCK_STYLE: Record<BlockType, string> = {
   map:          'text-[14px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   video:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   product:      'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
+  table:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
+  toc:          'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
 };
 
 const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
@@ -43,6 +45,8 @@ const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
   map:          '貼上 Google Maps Embed HTML...',
   video:        '貼上 YouTube 或 Vimeo 網址...',
   product:      '', // Handled by custom UI
+  table:        '', // Handled by custom UI
+  toc:          '', // Handled by custom UI
 };
 
 // ─── Markdown shortcut detection ─────────────────────────────
@@ -297,6 +301,15 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
       return;
     }
 
+    const initialData = type === 'table' ? {
+      title: '',
+      header: [{ text: '欄位 1' }, { text: '欄位 2' }],
+      rows: [
+        { cells: [{ text: '', imageUrl: '' }, { text: '', imageUrl: '' }] },
+        { cells: [{ text: '', imageUrl: '' }, { text: '', imageUrl: '' }] }
+      ]
+    } : undefined;
+
     // Clear the "/" text and switch type
     const el = textareaRefs.current.get(blockId);
     if (el) {
@@ -305,7 +318,7 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
       const textBefore = el.value.slice(0, cursor);
       const slashIdx = textBefore.lastIndexOf('/');
       const newContent = el.value.slice(0, slashIdx);
-      updateBlock(blockId, { type, content: newContent });
+      updateBlock(blockId, { type, content: newContent, data: initialData });
       setTimeout(() => {
         const el2 = textareaRefs.current.get(blockId);
         if (el2) {
@@ -315,7 +328,7 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
         }
       }, 10);
     } else {
-      updateBlock(blockId, { type, content: '' });
+      updateBlock(blockId, { type, content: '', data: initialData });
     }
     focusBlock(blockId);
   }, [slashMenu, updateBlock, insertBlockAfter, focusBlock, autoResize]);
@@ -431,6 +444,150 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
                   />
                   <div className="text-xs text-gray-400 mt-1">注意：圖片請到後台編輯文章時上傳。</div>
                   {/* Keep a hidden textarea so navigation logic still works */}
+                  <textarea
+                    ref={el => {
+                      if (el) textareaRefs.current.set(block.id, el);
+                      else textareaRefs.current.delete(block.id);
+                    }}
+                    value=""
+                    onChange={() => {}}
+                    onKeyDown={e => handleKeyDown(e, block)}
+                    className="w-0 h-0 opacity-0 absolute"
+                  />
+                </div>
+              ) : block.type === 'toc' ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">📑</span>
+                    <span className="text-xs font-bold text-gray-600 tracking-wider uppercase">文章目錄 (Table of Contents)</span>
+                  </div>
+                  <div className="text-sm text-gray-500">目錄將在此處自動產生，列出文章中所有的 H1 與 H2 標題。</div>
+                  <textarea
+                    ref={el => {
+                      if (el) textareaRefs.current.set(block.id, el);
+                      else textareaRefs.current.delete(block.id);
+                    }}
+                    value=""
+                    onChange={() => {}}
+                    onKeyDown={e => handleKeyDown(e, block)}
+                    className="w-0 h-0 opacity-0 absolute"
+                  />
+                </div>
+              ) : block.type === 'table' ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-4 overflow-x-auto">
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">📊</span>
+                      <span className="text-xs font-bold text-gray-600 tracking-wider uppercase">資料表格 (Table)</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => {
+                          const newData = { ...block.data };
+                          newData.header.push({ text: `欄位 ${newData.header.length + 1}` });
+                          newData.rows.forEach((r: any) => r.cells.push({ text: '', imageUrl: '' }));
+                          updateBlock(block.id, { data: newData });
+                        }}
+                        className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100"
+                      >+ 新增欄位</button>
+                      <button 
+                        onClick={() => {
+                          const newData = { ...block.data };
+                          const newRow = { cells: newData.header.map(() => ({ text: '', imageUrl: '' })) };
+                          newData.rows.push(newRow);
+                          updateBlock(block.id, { data: newData });
+                        }}
+                        className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100"
+                      >+ 新增列</button>
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="表格標題 (可選)"
+                    value={block.data?.title || ''}
+                    onChange={e => updateBlock(block.id, { data: { ...block.data, title: e.target.value } })}
+                    className="w-full border border-transparent bg-transparent font-medium px-1 py-1 text-sm outline-none focus:border-amber-400 focus:bg-white focus:rounded-md transition-all"
+                  />
+                  <table className="w-full text-sm text-left border-collapse min-w-[500px]">
+                    <thead className="bg-gray-100 text-gray-700">
+                      <tr>
+                        {block.data?.header?.map((h: any, i: number) => (
+                          <th key={i} className="border border-gray-300 p-2 relative group min-w-[200px]">
+                            <input 
+                              type="text" 
+                              value={h.text} 
+                              onChange={e => {
+                                const newData = { ...block.data };
+                                newData.header[i].text = e.target.value;
+                                updateBlock(block.id, { data: newData });
+                              }}
+                              className="w-full bg-transparent outline-none font-semibold text-gray-800"
+                              placeholder="表頭名稱"
+                            />
+                            {block.data.header.length > 1 && (
+                              <button 
+                                onClick={() => {
+                                  const newData = { ...block.data };
+                                  newData.header.splice(i, 1);
+                                  newData.rows.forEach((r: any) => r.cells.splice(i, 1));
+                                  updateBlock(block.id, { data: newData });
+                                }}
+                                className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                                title="刪除此欄"
+                              >×</button>
+                            )}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {block.data?.rows?.map((row: any, rIdx: number) => (
+                        <tr key={rIdx} className="relative group">
+                          {row.cells?.map((cell: any, cIdx: number) => (
+                            <td key={cIdx} className="border border-gray-300 p-2 align-top bg-white relative">
+                              {cIdx === row.cells.length - 1 && block.data.rows.length > 1 && (
+                                <button 
+                                  onClick={() => {
+                                    const newData = { ...block.data };
+                                    newData.rows.splice(rIdx, 1);
+                                    updateBlock(block.id, { data: newData });
+                                  }}
+                                  className="absolute top-2 -right-8 w-6 h-6 rounded-full bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs z-10"
+                                  title="刪除此列"
+                                >×</button>
+                              )}
+                              <div className="flex flex-col gap-2">
+                                <textarea
+                                  placeholder="文字內容 (支援 [文字](網址) 連結)"
+                                  value={cell.text || ''}
+                                  onChange={e => {
+                                    const newData = { ...block.data };
+                                    newData.rows[rIdx].cells[cIdx].text = e.target.value;
+                                    updateBlock(block.id, { data: newData });
+                                    autoResize(e.target);
+                                  }}
+                                  onFocus={e => autoResize(e.target)}
+                                  rows={1}
+                                  className="w-full resize-none bg-transparent outline-none text-gray-800 min-h-[1.5em]"
+                                />
+                                <input 
+                                  type="text" 
+                                  placeholder="圖片網址 (可選)"
+                                  value={cell.imageUrl || ''}
+                                  onChange={e => {
+                                    const newData = { ...block.data };
+                                    newData.rows[rIdx].cells[cIdx].imageUrl = e.target.value;
+                                    updateBlock(block.id, { data: newData });
+                                  }}
+                                  className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1 w-full outline-none focus:border-amber-400"
+                                />
+                              </div>
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                   <textarea
                     ref={el => {
                       if (el) textareaRefs.current.set(block.id, el);

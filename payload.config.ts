@@ -70,6 +70,70 @@ const ProductBlock: Block = {
   ],
 };
 
+const TableBlock: Block = {
+  slug: 'table',
+  labels: { singular: '表格 (Table)', plural: '表格 (Tables)' },
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      label: '表格標題 (可選)',
+    },
+    {
+      name: 'header',
+      type: 'array',
+      label: '表頭 (Header)',
+      fields: [
+        {
+          name: 'text',
+          type: 'text',
+          label: '文字',
+        }
+      ]
+    },
+    {
+      name: 'rows',
+      type: 'array',
+      label: '列 (Rows)',
+      fields: [
+        {
+          name: 'cells',
+          type: 'array',
+          label: '儲存格 (Cells)',
+          fields: [
+            {
+              name: 'text',
+              type: 'textarea',
+              label: '文字內容 (支援 Markdown 連結)',
+            },
+            {
+              name: 'imageUrl',
+              type: 'text',
+              label: '圖片網址 (可選)',
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+const TOCBlock: Block = {
+  slug: 'toc',
+  labels: { singular: '目錄 (Table of Contents)', plural: '目錄 (Table of Contents)' },
+  fields: [
+    {
+      name: 'placeholder',
+      type: 'text',
+      defaultValue: '目錄將在此處自動生成',
+      admin: {
+        description: '這是系統自動生成的目錄佔位符，不需要填寫內容。',
+        readOnly: true,
+      }
+    }
+  ]
+};
+
 export default buildConfig({
   admin: {
     user: 'users',
@@ -222,7 +286,7 @@ export default buildConfig({
             features: ({ defaultFeatures }) => [
               ...defaultFeatures,
               BlocksFeature({
-                blocks: [MapBlock, VideoBlock, ProductBlock],
+                blocks: [MapBlock, VideoBlock, ProductBlock, TableBlock, TOCBlock],
               }),
             ],
           }),

@@ -12,7 +12,9 @@ export type BlockType =
   | 'numberedList'
   | 'map'
   | 'video'
-  | 'product';
+  | 'product'
+  | 'table'
+  | 'toc';
 
 export interface Block {
   id: string;
@@ -27,38 +29,72 @@ function makeText(text: string) {
   return { type: 'text', text, version: 1, format: 0, detail: 0, mode: 'normal', style: '' };
 }
 
+function parseTextWithLinks(text: string) {
+  if (!text) return [makeText('')];
+  
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const nodes = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(makeText(text.slice(lastIndex, match.index)));
+    }
+    nodes.push({
+      type: 'link',
+      version: 2,
+      direction: 'ltr',
+      format: '',
+      indent: 0,
+      fields: {
+        linkType: 'custom',
+        url: match[2],
+        newTab: true,
+      },
+      children: [makeText(match[1])],
+    });
+    lastIndex = linkRegex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    nodes.push(makeText(text.slice(lastIndex)));
+  }
+
+  return nodes.length > 0 ? nodes : [makeText('')];
+}
+
 function makeParagraph(text: string) {
   return {
     type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, textFormat: 0,
-    children: text ? [makeText(text)] : [makeText('')],
+    children: parseTextWithLinks(text),
   };
 }
 
 function makeHeading(text: string, tag: 'h1' | 'h2' | 'h3') {
   return {
     type: 'heading', tag, version: 1, direction: 'ltr', format: '', indent: 0,
-    children: text ? [makeText(text)] : [],
+    children: parseTextWithLinks(text),
   };
 }
 
 function makeQuote(text: string) {
   return {
     type: 'quote', version: 1, direction: 'ltr', format: '', indent: 0,
-    children: text ? [makeText(text)] : [],
+    children: parseTextWithLinks(text),
   };
 }
 
 function makeCode(text: string) {
   return {
     type: 'code', version: 1, direction: 'ltr', format: '', indent: 0, language: '',
-    children: text ? [makeText(text)] : [],
+    children: text ? [makeText(text)] : [], // No links in code block
   };
 }
 
 function makeListItem(text: string) {
   return {
     type: 'listitem', version: 1, value: 1, format: '', indent: 0, direction: 'ltr',
-    children: text ? [makeText(text)] : [],
+    children: parseTextWithLinks(text),
   };
 }
 
@@ -102,6 +138,12 @@ export function blocksToLexical(blocks: Block[]) {
       case 'product':
         nodes.push({ type: 'block', fields: { blockType: 'product', ...(block.data || {}) }, format: '', version: 2 });
         break;
+      case 'table':
+        nodes.push({ type: 'block', fields: { blockType: 'table', ...(block.data || {}) }, format: '', version: 2 });
+        break;
+      case 'toc':
+        nodes.push({ type: 'block', fields: { blockType: 'toc' }, format: '', version: 2 });
+        break;
       default: nodes.push(makeParagraph(block.content));
     }
     i++;
@@ -117,8 +159,15 @@ export function blocksToLexical(blocks: Block[]) {
 
 // ─── Lexical → Block ─────────────────────────────────────────
 
-function extractText(children: { text?: string }[]): string {
-  return (children || []).map(c => c.text || '').join('');
+function extractText(children: any[]): string {
+  if (!children) return '';
+  return children.map(c => {
+    if (c.type === 'link') {
+      const linkText = c.children?.map((lc: any) => lc.text || '').join('') || '';
+      return `[${linkText}](${c.fields?.url || ''})`;
+    }
+    return c.text || '';
+  }).join('');
 }
 
 export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): Block[] {
@@ -129,7 +178,7 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
   const blocks: Block[] = [];
 
   for (const node of lexical.root.children as Record<string, unknown>[]) {
-    const text = extractText((node.children as { text?: string }[]) || []);
+    const text = extractText((node.children as any[]) || []);
 
     if (node.type === 'heading') {
       const tagMap: Record<string, BlockType> = { h1: 'heading1', h2: 'heading2', h3: 'heading3' };
@@ -143,7 +192,7 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
     } else if (node.type === 'list') {
       const listType: BlockType = node.listType === 'bullet' ? 'bulletList' : 'numberedList';
       for (const item of (node.children as Record<string, unknown>[]) || []) {
-        const itemText = extractText((item.children as { text?: string }[]) || []);
+        const itemText = extractText((item.children as any[]) || []);
         blocks.push({ id: uid(), type: listType, content: itemText });
       }
     } else if (node.type === 'block') {
@@ -154,6 +203,10 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
         blocks.push({ id: uid(), type: 'video', content: fields.url || '' });
       } else if (fields?.blockType === 'product') {
         blocks.push({ id: uid(), type: 'product', content: '', data: fields });
+      } else if (fields?.blockType === 'table') {
+        blocks.push({ id: uid(), type: 'table', content: '', data: fields });
+      } else if (fields?.blockType === 'toc') {
+        blocks.push({ id: uid(), type: 'toc', content: '' });
       }
     } else {
       blocks.push({ id: uid(), type: 'paragraph', content: text });

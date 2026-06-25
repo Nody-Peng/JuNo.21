@@ -26,8 +26,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   };
 }
 
-const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
+const createConverters = (headings: { text: string; id: string; tag: string }[]): JSXConvertersFunction => ({ defaultConverters }) => ({
   ...defaultConverters,
+  heading: ({ node, nodesToJSX }: { node: any, nodesToJSX: any }) => {
+    const tag = node.tag as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+    const text = node.children?.map((c: any) => c.text || '').join('') || '';
+    const id = text.toLowerCase().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '') || undefined;
+    const Tag = tag;
+    return <Tag id={id} className="scroll-mt-24">{nodesToJSX({ nodes: node.children })}</Tag>;
+  },
   blocks: {
     map: ({ node }: { node: any }) => (
       <div 
@@ -43,6 +50,80 @@ const jsxConverters: JSXConvertersFunction = ({ defaultConverters }) => ({
       return (
         <div className="w-full aspect-video my-10 rounded-2xl overflow-hidden shadow-sm bg-stone-100 flex items-center justify-center">
           <iframe src={embedUrl} className="w-full h-full" allowFullScreen frameBorder="0" />
+        </div>
+      );
+    },
+    toc: () => {
+      if (headings.length === 0) return null;
+      return (
+        <div className="my-10 bg-white border border-gray-200 rounded-2xl p-6 md:p-8 shadow-sm not-prose">
+          <h4 className="text-sm font-bold tracking-widest text-[#8A6A5C] uppercase mb-4 flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+            目錄 (Table of Contents)
+          </h4>
+          <ul className="flex flex-col gap-3 m-0 p-0 list-none">
+            {headings.map((h, i) => (
+              <li key={i} className={`m-0 p-0 ${h.tag === 'h2' ? 'ml-6' : ''}`}>
+                <a href={`#${h.id}`} className="text-[#3B2D2A]/80 hover:text-amber-700 transition-colors text-[15px] md:text-base decoration-amber-700/30 underline-offset-4 hover:underline">
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    },
+    table: ({ node }: { node: any }) => {
+      const { title, header, rows } = node.fields;
+      return (
+        <div className="my-10 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm not-prose">
+          {title && <div className="bg-gray-50 px-4 py-3 font-medium text-gray-800 border-b border-gray-200">{title}</div>}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[15px] min-w-[500px]">
+              {header && header.length > 0 && (
+                <thead className="bg-gray-50 text-gray-600 border-b border-gray-200">
+                  <tr>
+                    {header.map((h: any, i: number) => (
+                      <th key={i} className="px-5 py-3.5 font-semibold whitespace-nowrap">{h.text}</th>
+                    ))}
+                  </tr>
+                </thead>
+              )}
+              <tbody className="divide-y divide-gray-100">
+                {rows && rows.map((row: any, rIdx: number) => (
+                  <tr key={rIdx} className="hover:bg-gray-50/50 transition-colors">
+                    {row.cells && row.cells.map((cell: any, cIdx: number) => {
+                      let textContent = cell.text || '';
+                      const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+                      let parts = [];
+                      let lastIndex = 0;
+                      let match;
+                      while ((match = linkRegex.exec(textContent)) !== null) {
+                        if (match.index > lastIndex) {
+                          parts.push(textContent.slice(lastIndex, match.index));
+                        }
+                        parts.push(<a key={`link-${rIdx}-${cIdx}-${match.index}`} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-amber-700 hover:underline">{match[1]}</a>);
+                        lastIndex = linkRegex.lastIndex;
+                      }
+                      if (lastIndex < textContent.length) {
+                        parts.push(textContent.slice(lastIndex));
+                      }
+                      return (
+                        <td key={cIdx} className="px-5 py-4 align-top text-gray-800 leading-relaxed whitespace-pre-wrap">
+                          <div className="flex flex-col gap-3">
+                            {parts.length > 0 ? <div>{parts}</div> : null}
+                            {cell.imageUrl && (
+                              <img src={cell.imageUrl} alt="" className="w-full max-w-[300px] rounded-lg object-cover shadow-sm" />
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       );
     },
@@ -141,6 +222,20 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const categories = post.category || [];
   const primaryCategory = categories[0]?.title || categories[0] || '';
   const seriesTag = post.series ? `連載：${post.series}` : '';
+
+  // Extract headings for TOC
+  const headings: { text: string; id: string; tag: string }[] = [];
+  if (post.content?.root?.children) {
+    for (const node of post.content.root.children) {
+      if (node.type === 'heading' && (node.tag === 'h1' || node.tag === 'h2')) {
+        const text = node.children?.map((c: any) => c.text || '').join('') || '';
+        const id = text.toLowerCase().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '') || `heading-${headings.length}`;
+        if (text) headings.push({ text, id, tag: node.tag });
+      }
+    }
+  }
+
+  const jsxConverters = createConverters(headings);
 
   const jsonLd = {
     '@context': 'https://schema.org',
