@@ -101,5 +101,6 @@ export async function uploadMedia(token: string, file: File, alt: string): Promi
     headers: { Authorization: `JWT ${token}` },
     body: formData,
   });
-  return res.json();
+  const data = await res.json();
+  return data.doc || data;
 }
