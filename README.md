@@ -1,62 +1,67 @@
-# JuNo.21 - 夏至原點 Blog System
+# JuNo.21 質感選物部落格
 
-這是一個使用 Next.js 15 (App Router) + Payload CMS 3.0 打造的全端現代化部落格平台。
+JuNo.21 是一個結合質感選物與深度文章的現代化部落格平台。本專案採用 **Next.js (App Router)** 建構高互動性的前台，並深度整合 **Payload CMS 3.x** 作為無頭內容管理系統 (Headless CMS)。
 
-## 📍 網站架構與重要網址 (URLs & Ports)
+為了提供最直覺的文章撰寫體驗，我們在 Next.js 前台量身打造了一套「自訂區塊編輯器 (Block Editor)」，讓作者可以在前台直接新增商品卡片、插入 Google 地圖、建立表格，並將這些資料無縫轉換並儲存回 Payload 的 Lexical Rich Text 欄位中。
 
-整個系統（前端與 Payload 後台）都運行在同一個 Next.js 應用程式中。
+## 系統架構與技術棧 (Tech Stack)
 
-### 開發環境 (Development)
-- **Localhost**: `http://localhost:3000`
-- **區域網路**: `http://192.168.50.143:3000` (依照你的 IP 而定)
+- **前端框架**: Next.js (App Router)
+- **後端 CMS**: Payload CMS 3.x (與 Next.js 整合於同一伺服器)
+- **資料庫**: PostgreSQL (透過 Vercel Postgres 或 neon 等服務)
+- **樣式與設計**: Tailwind CSS, Lucide React (圖示)
+- **套件管理**: pnpm (版本 v10)
+- **部署環境**: Vercel
 
-### 正式環境 (Production)
-- **主網址**: `https://juno21.com`
+## 核心功能
 
-### 網頁路由 (Routes)
-- `/` - 網站首頁
-- `/blog` - 所有文章列表
-- `/post/[slug]` - 單篇文章頁面
-- `/studio` - 前端作者登入頁
-- `/my-posts` - 前端文章管理與儀表板 (需登入)
-- `/write` - 前端寫作編輯器 (需登入)
-- `/newsletter` - 前端發送電子報 (需登入)
-- `/admin` - Payload CMS 官方進階後台 (開發與管理用)
-- `/api` - Payload API 與自訂 API 路由
+1. **自訂前台文章編輯器 (`/write`)**: 
+   - 擺脫傳統 CMS 複雜的後台，作者登入後可直接在網站前台撰寫文章。
+   - 支援 H1/H2/H3 標題、引言、項目符號、程式碼等基礎排版。
+   - 支援進階客製化區塊：**商品輪播卡片 (Product Carousel)**、**動態表格 (Table)**、**地圖嵌入 (Map)**、**YouTube 影片 (Video)**。
+   - 支援直接在前台拖曳或上傳圖片，自動同步至 Payload 媒體庫 (Media)。
+   - 即時草稿自動儲存功能與發布管理。
 
----
+2. **響應式現代化前台設計**:
+   - 充滿細節的微動畫 (Micro-animations) 與高品質排版。
+   - 首頁精選文章、最新文章列表，以及支援分類與搜尋的 `/blog` 頁面。
+   - 文章內頁自動產生「文章目錄 (Table of Contents)」與動態閱讀進度條。
 
-## 🎨 圖片尺寸與製圖規範 (Image Guidelines)
+3. **強大的後端管理 (Payload CMS)**:
+   - 管理員可以控管使用者 (Users)、文章 (Posts)、分類 (Categories)、媒體檔案 (Media) 以及電子報訂閱名單 (Newsletter)。
+   - 發送客製化電子報功能。
 
-為了讓前端版面達到最完美的視覺平衡，建議在製圖時遵循以下尺寸規範：
+## 如何使用後台 (Payload Admin)
 
-### 1. 文章開頭圖片 (Hero / Cover Image)
-- **建議尺寸**: `1200 x 630 px` (比例約 1.9:1)
-- **說明**: 這是標準的 Open Graph (OG) 比例。使用這個尺寸不僅能在文章開頭呈現完美的橫幅視覺，當你把文章分享到 Facebook、LINE 或 Twitter 時，連結縮圖才不會被裁切到。
+雖然大部分的文章撰寫都可以在前台的 `/write` 頁面完成，但若是需要進行系統管理、分類建立或進階設定，您可以進入 Payload 後台：
 
-### 2. 內文圖片 (Inline Content Images)
-- **建議尺寸**: 寬度建議至少 `1200 px`，高度可依照照片原始比例（例如 `1200 x 800 px` 的 3:2 照片）。
-- **說明**: 內文圖片通常是滿版或置中顯示。提供至少 1200px 寬的圖片，可以確保在 Retina 高解析度螢幕（如 Mac 或 iPhone）上看起來依然清晰銳利。
+1. **進入後台**: 在網址列輸入 `https://您的網域/admin` (本地開發請訪問 `http://localhost:3000/admin`)。
+2. **登入帳號**: 使用您設定的 Admin Email 與密碼登入。
+3. **管理項目**:
+   - **Users**: 管理可登入的作者或管理員帳號。
+   - **Categories**: 建立與管理文章分類。
+   - **Posts**: 所有的文章（包含前台建立的草稿與發布文章）都會存放在這裡。若遇到前台無法處理的特殊版面調整，也可在此處透過 Lexical Editor 強制編輯。
+   - **Media**: 統一管理全站上傳的圖片與檔案。
+   - **Newsletter Emails**: 檢視訂閱電子報的讀者 Email。
 
-### 3. 選物卡片圖片 (Product Showcase)
-- **建議尺寸**: `800 x 800 px` (1:1 正方形) 或 `800 x 1000 px` (4:5 微長方形)
-- **說明**: 選物卡片的設計在左側會有一個固定的圖片區塊（使用 `object-cover` 填滿），在手機版則是顯示在最上方。使用正方形或微長方形能確保商品主體完美置中，不會因為過扁的橫幅而導致上下被裁切。
+## 開發與本地執行指令
 
-### 其他注意事項：
-- **檔案格式**: 建議使用 `WebP` 或 `JPEG` 以獲得最佳的載入速度。
-- **色彩模式**: 確保輸出為 `sRGB` 模式，以避免在不同瀏覽器出現色偏。
+1. 安裝依賴套件:
+   ```bash
+   pnpm install
+   ```
 
----
+2. 設定環境變數 (`.env`):
+   請確保您擁有正確的 `DATABASE_URI` (PostgreSQL 連線字串) 與 `PAYLOAD_SECRET`。
 
-## 🚀 指令與啟動方式
+3. 啟動本地開發伺服器:
+   ```bash
+   pnpm dev
+   ```
+   伺服器將運行於 `http://localhost:3000`。
 
-```bash
-# 安裝依賴
-pnpm install
+## AI 開發擴充指南
 
-# 啟動開發伺服器
-pnpm run dev
+如果未來您希望透過 AI 助手（如 ChatGPT、Claude、Gemini 等）為這個專案新增更多的「客製化編輯區塊」（例如：漂亮的名言字卡、QA 手風琴、活動倒數計時器等），我們特別準備了一份針對 AI 的開發架構說明書。
 
-# 建立正式環境檔案
-pnpm run build
-```
+請參考專案根目錄下的 `AI_DEVELOPMENT_GUIDE.md`。當您有擴充需求時，**請直接將該檔案的內容複製並貼給 AI 看**，AI 就能瞬間理解本專案獨特的「前台 Block Editor <-> 後台 Lexical」資料轉換架構，並精準為您寫出擴充程式碼。
