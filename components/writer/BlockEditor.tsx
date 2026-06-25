@@ -11,7 +11,7 @@ import SlashMenu from './SlashMenu';
 interface Props {
   initialBlocks?: Block[];
   onChange: (blocks: Block[]) => void;
-  onUploadImage?: (file: File) => Promise<string | null>;
+  onUploadImage?: (file: File) => Promise<{ id: string, url: string } | null>;
 }
 
 // ─── Block style config ──────────────────────────────────────
@@ -457,71 +457,124 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
               {block.type === 'video' && <div className="text-xs font-semibold text-gray-500 mb-1 tracking-wider uppercase">▶️ Video URL</div>}
 
               {block.type === 'product' ? (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-3">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xl">🛍️</span>
-                    <span className="text-xs font-bold text-gray-600 tracking-wider uppercase">商品卡片 (Product Showcase)</span>
+                    <span className="text-xs font-bold text-gray-600 tracking-wider uppercase">商品輪播 (Products Carousel)</span>
                   </div>
                   <input
                     type="text"
-                    placeholder="商品名稱"
-                    value={block.data?.productName || ''}
-                    onChange={e => updateBlock(block.id, { data: { ...block.data, productName: e.target.value } })}
-                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                    placeholder="推薦區塊標題 (例如：虎航登機箱推薦)"
+                    value={block.data?.sectionTitle || ''}
+                    onChange={e => updateBlock(block.id, { data: { ...block.data, sectionTitle: e.target.value } })}
+                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400 font-bold"
                   />
-                  <input
-                    type="text"
-                    placeholder="價格或售價 (例如：NT$ 1,200)"
-                    value={block.data?.price || ''}
-                    onChange={e => updateBlock(block.id, { data: { ...block.data, price: e.target.value } })}
-                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
-                  />
-                  <textarea
-                    placeholder="推薦理由 / 商品描述"
-                    value={block.data?.description || ''}
-                    onChange={e => {
-                      updateBlock(block.id, { data: { ...block.data, description: e.target.value } });
-                      autoResize(e.target);
-                    }}
-                    rows={2}
-                    className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400 resize-none"
-                  />
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="購買或介紹連結 (URL)"
-                      value={block.data?.link || ''}
-                      onChange={e => updateBlock(block.id, { data: { ...block.data, link: e.target.value } })}
-                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
-                    />
+                  
+                  {/* Items List */}
+                  <div className="flex flex-col gap-4">
+                    {(block.data?.items || []).map((item: any, idx: number) => (
+                      <div key={idx} className="bg-white border border-gray-200 rounded-lg p-4 relative shadow-sm">
+                        <div className="absolute right-2 top-2">
+                          <button onClick={() => {
+                            const newItems = [...(block.data?.items || [])];
+                            newItems.splice(idx, 1);
+                            updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                          }} className="text-gray-400 hover:text-red-500 text-xs px-2 py-1 bg-gray-50 rounded">移除</button>
+                        </div>
+                        <h4 className="text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">商品 {idx + 1}</h4>
+                        <div className="flex flex-col gap-3">
+                          <input
+                            type="text"
+                            placeholder="商品名稱"
+                            value={item.productName || ''}
+                            onChange={e => {
+                              const newItems = [...(block.data?.items || [])];
+                              newItems[idx] = { ...item, productName: e.target.value };
+                              updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                            }}
+                            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                          />
+                          <input
+                            type="text"
+                            placeholder="價格或售價 (例如：NT$ 1,200)"
+                            value={item.price || ''}
+                            onChange={e => {
+                              const newItems = [...(block.data?.items || [])];
+                              newItems[idx] = { ...item, price: e.target.value };
+                              updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                            }}
+                            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                          />
+                          <textarea
+                            placeholder="推薦理由 / 商品描述"
+                            value={item.description || ''}
+                            onChange={e => {
+                              const newItems = [...(block.data?.items || [])];
+                              newItems[idx] = { ...item, description: e.target.value };
+                              updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                              autoResize(e.target);
+                            }}
+                            rows={2}
+                            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400 resize-none"
+                          />
+                          <input
+                            type="text"
+                            placeholder="購買或介紹連結 (URL)"
+                            value={item.link || ''}
+                            onChange={e => {
+                              const newItems = [...(block.data?.items || [])];
+                              newItems[idx] = { ...item, link: e.target.value };
+                              updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                            }}
+                            className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                          />
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="text"
+                              placeholder="圖片網址 (建議用右側按鈕上傳)"
+                              value={item.image?.url || ''}
+                              onChange={e => {
+                                const newItems = [...(block.data?.items || [])];
+                                newItems[idx] = { ...item, image: { ...item.image, url: e.target.value, alt: item.productName } };
+                                updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                              }}
+                              className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
+                            />
+                            {onUploadImage && (
+                              <label className="cursor-pointer bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors">
+                                上傳圖片
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async e => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const res = await onUploadImage(file);
+                                    if (res) {
+                                      const newItems = [...(block.data?.items || [])];
+                                      newItems[idx] = { ...item, image: { id: res.id, url: res.url, alt: item.productName } };
+                                      updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                                    }
+                                  }}
+                                />
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const newItems = [...(block.data?.items || []), {}];
+                        updateBlock(block.id, { data: { ...block.data, items: newItems } });
+                      }}
+                      className="w-full py-3 mt-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-amber-400 hover:text-amber-600 font-medium text-sm transition-colors bg-white/50"
+                    >
+                      + 新增商品 (Add Item)
+                    </button>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="text"
-                      placeholder="圖片網址 (可貼上網址或上傳)"
-                      value={block.data?.image?.url || ''}
-                      onChange={e => updateBlock(block.id, { data: { ...block.data, image: { url: e.target.value, alt: block.data.productName } } })}
-                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400"
-                    />
-                    {onUploadImage && (
-                      <label className="cursor-pointer bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors">
-                        上傳圖片
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async e => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const url = await onUploadImage(file);
-                            if (url) {
-                              updateBlock(block.id, { data: { ...block.data, image: { url, alt: block.data.productName } } });
-                            }
-                          }}
-                        />
-                      </label>
-                    )}
-                  </div>
+
                   {/* Keep a hidden textarea so navigation logic still works */}
                   <textarea
                     ref={el => {
@@ -671,10 +724,10 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                                         onChange={async e => {
                                           const file = e.target.files?.[0];
                                           if (!file) return;
-                                          const url = await onUploadImage(file);
-                                          if (url) {
+                                          const res = await onUploadImage(file);
+                                          if (res) {
                                             const newData = { ...block.data };
-                                            newData.rows[rIdx].cells[cIdx].imageUrl = url;
+                                            newData.rows[rIdx].cells[cIdx].imageUrl = res.url;
                                             updateBlock(block.id, { data: newData });
                                           }
                                         }}
