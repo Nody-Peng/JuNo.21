@@ -7,6 +7,7 @@ import NavigationLoader from '@/components/NavigationLoader';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://juno21.com'),
   title: '夏至原點',
   description: '跨越時差的日常 — 遠距離戀愛、生活碎片與真心推薦的好物。',
 };

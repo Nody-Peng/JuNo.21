@@ -142,8 +142,27 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const primaryCategory = categories[0]?.title || categories[0] || '';
   const seriesTag = post.series ? `連載：${post.series}` : '';
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt || '',
+    image: post.heroImage?.url ? [post.heroImage.url] : [],
+    datePublished: date.toISOString(),
+    dateModified: new Date(post.updatedAt).toISOString(),
+    author: [{
+      '@type': 'Person',
+      name: '夏至原點',
+      url: 'https://juno21.com'
+    }]
+  };
+
   return (
     <article className="w-full bg-[#F9F8F6] pt-16 pb-32">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-[800px] mx-auto px-6 md:px-12">
         {/* Header */}
         <header className="mb-16 text-center">
