@@ -1,16 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
 
 export default function NavigationLoader() {
   const [isNavigating, setIsNavigating] = useState(false);
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    // Whenever pathname or searchParams changes, we could potentially stop the loader
-    // But since we want to enforce a minimum of 1.5s animation, we handle it in the click event.
-  }, [pathname, searchParams]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
