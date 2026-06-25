@@ -52,7 +52,8 @@ export async function createPost(token: string, postData: Record<string, unknown
     },
     body: JSON.stringify(postData),
   });
-  return res.json();
+  const data = await res.json();
+  return data.doc || data;
 }
 
 export async function updatePost(token: string, id: string, postData: Record<string, unknown>) {
@@ -64,7 +65,8 @@ export async function updatePost(token: string, id: string, postData: Record<str
     },
     body: JSON.stringify(postData),
   });
-  return res.json();
+  const data = await res.json();
+  return data.doc || data;
 }
 
 export async function getMyPosts(token: string, userId: number): Promise<{ docs: PostDoc[] }> {
