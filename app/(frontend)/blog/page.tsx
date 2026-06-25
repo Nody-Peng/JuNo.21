@@ -16,6 +16,7 @@ export default async function BlogPage() {
   // Fetch all posts with depth to populate categories
   const { docs: posts } = await payload.find({
     collection: 'posts',
+    where: { status: { equals: 'published' } },
     depth: 1,
     limit: 100,
     sort: '-publishedDate',

@@ -227,11 +227,8 @@ export default buildConfig({
       access: {
         read: ({ req }) => {
           if (req.user) return true;
-          return { _status: { equals: 'published' } };
+          return { status: { equals: 'published' } };
         },
-      },
-      versions: {
-        drafts: true,
       },
       admin: {
         useAsTitle: 'title',
@@ -247,6 +244,18 @@ export default buildConfig({
           name: 'slug',
           type: 'text',
           unique: true,
+          admin: {
+            position: 'sidebar',
+          },
+        },
+        {
+          name: 'status',
+          type: 'select',
+          options: [
+            { label: '草稿 (Draft)', value: 'draft' },
+            { label: '已發布 (Published)', value: 'published' },
+          ],
+          defaultValue: 'draft',
           admin: {
             position: 'sidebar',
           },

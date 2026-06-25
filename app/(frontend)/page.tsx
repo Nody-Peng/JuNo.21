@@ -12,6 +12,7 @@ export default async function HomePage() {
   
   const { docs: posts } = await payload.find({
     collection: 'posts',
+    where: { status: { equals: 'published' } },
     sort: '-publishedDate',
     limit: 3, // Changed to 3 to match the design
   });

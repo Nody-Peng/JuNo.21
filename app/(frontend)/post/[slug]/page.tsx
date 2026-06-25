@@ -9,7 +9,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const payload = await getPayload({ config: configPromise });
   const { docs } = await payload.find({
     collection: 'posts',
-    where: { or: [{ slug: { equals: slug } }, { slug: { equals: `/${slug}` } }] },
+    where: { 
+      and: [
+        { or: [{ slug: { equals: slug } }, { slug: { equals: `/${slug}` } }] },
+        { status: { equals: 'published' } }
+      ]
+    },
   });
   const post = docs[0];
   
@@ -212,10 +217,15 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const { docs } = await payload.find({
     collection: 'posts',
     where: {
-      or: [
-        { slug: { equals: slug } },
-        { slug: { equals: `/${slug}` } },
-      ],
+      and: [
+        {
+          or: [
+            { slug: { equals: slug } },
+            { slug: { equals: `/${slug}` } },
+          ],
+        },
+        { status: { equals: 'published' } }
+      ]
     },
     depth: 1, // ensure categories are populated
   });

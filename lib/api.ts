@@ -22,7 +22,7 @@ export interface PostDoc {
   slug: string;
   excerpt?: string;
   publishedDate: string;
-  _status?: string;
+  status?: string;
   series?: string;
   heroImage?: MediaDoc;
   category?: Category[];
@@ -72,7 +72,7 @@ export async function updatePost(token: string, id: string, postData: Record<str
 export async function getMyPosts(token: string, userId: number): Promise<{ docs: PostDoc[] }> {
   try {
     const res = await fetch(
-      `${getBaseUrl()}/api/posts?where[author][equals]=${userId}&limit=100&sort=-publishedDate&draft=true`,
+      `${getBaseUrl()}/api/posts?where[author][equals]=${userId}&limit=100&sort=-publishedDate`,
       {
         headers: { Authorization: `JWT ${token}` },
         cache: 'no-store',
@@ -85,7 +85,7 @@ export async function getMyPosts(token: string, userId: number): Promise<{ docs:
 }
 
 export async function getPostById(token: string, id: string) {
-  const res = await fetch(`${getBaseUrl()}/api/posts/${id}?draft=true`, {
+  const res = await fetch(`${getBaseUrl()}/api/posts/${id}`, {
     headers: { Authorization: `JWT ${token}` },
     cache: 'no-store',
   });
