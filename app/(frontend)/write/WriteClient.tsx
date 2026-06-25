@@ -230,7 +230,7 @@ export default function WriteClient({ token, userId, categories }: Props) {
             onUploadImage={async (file) => {
               try {
                 const res = await uploadMedia(token, file, file.name);
-                return res?.url || null;
+                return res ? { id: res.id, url: res.url } : null;
               } catch (e) {
                 console.error(e);
                 alert('圖片上傳失敗');
