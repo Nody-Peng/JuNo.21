@@ -5,7 +5,7 @@ import LatestPosts from '@/components/LatestPosts';
 import AboutSection from '@/components/AboutSection';
 import Newsletter from '@/components/Newsletter';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   const payload = await getPayload({ config: configPromise });

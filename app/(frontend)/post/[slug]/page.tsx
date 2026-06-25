@@ -203,7 +203,7 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
   }
 });
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
