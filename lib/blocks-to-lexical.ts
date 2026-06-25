@@ -1,0 +1,147 @@
+// Converts the custom block editor format into Payload CMS Lexical JSON
+
+export type BlockType =
+  | 'paragraph'
+  | 'heading1'
+  | 'heading2'
+  | 'heading3'
+  | 'quote'
+  | 'code'
+  | 'divider'
+  | 'bulletList'
+  | 'numberedList';
+
+export interface Block {
+  id: string;
+  type: BlockType;
+  content: string;
+}
+
+// ─── Block → Lexical ─────────────────────────────────────────
+
+function makeText(text: string) {
+  return { type: 'text', text, version: 1, format: 0, detail: 0, mode: 'normal', style: '' };
+}
+
+function makeParagraph(text: string) {
+  return {
+    type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, textFormat: 0,
+    children: text ? [makeText(text)] : [makeText('')],
+  };
+}
+
+function makeHeading(text: string, tag: 'h1' | 'h2' | 'h3') {
+  return {
+    type: 'heading', tag, version: 1, direction: 'ltr', format: '', indent: 0,
+    children: text ? [makeText(text)] : [],
+  };
+}
+
+function makeQuote(text: string) {
+  return {
+    type: 'quote', version: 1, direction: 'ltr', format: '', indent: 0,
+    children: text ? [makeText(text)] : [],
+  };
+}
+
+function makeCode(text: string) {
+  return {
+    type: 'code', version: 1, direction: 'ltr', format: '', indent: 0, language: '',
+    children: text ? [makeText(text)] : [],
+  };
+}
+
+function makeListItem(text: string) {
+  return {
+    type: 'listitem', version: 1, value: 1, format: '', indent: 0, direction: 'ltr',
+    children: text ? [makeText(text)] : [],
+  };
+}
+
+export function blocksToLexical(blocks: Block[]) {
+  // Group consecutive list items
+  const nodes: unknown[] = [];
+  let i = 0;
+
+  while (i < blocks.length) {
+    const block = blocks[i];
+
+    if (block.type === 'bulletList' || block.type === 'numberedList') {
+      const listType = block.type === 'bulletList' ? 'bullet' : 'number';
+      const items: Block[] = [];
+      while (i < blocks.length && blocks[i].type === block.type) {
+        items.push(blocks[i]);
+        i++;
+      }
+      nodes.push({
+        type: 'list', listType, version: 1, start: 1, direction: 'ltr', format: '', indent: 0,
+        tag: listType === 'bullet' ? 'ul' : 'ol',
+        children: items.map(b => makeListItem(b.content)),
+      });
+      continue;
+    }
+
+    switch (block.type) {
+      case 'heading1': nodes.push(makeHeading(block.content, 'h1')); break;
+      case 'heading2': nodes.push(makeHeading(block.content, 'h2')); break;
+      case 'heading3': nodes.push(makeHeading(block.content, 'h3')); break;
+      case 'quote':    nodes.push(makeQuote(block.content)); break;
+      case 'code':     nodes.push(makeCode(block.content)); break;
+      case 'divider':
+        nodes.push({ type: 'horizontalrule', version: 1 });
+        break;
+      default: nodes.push(makeParagraph(block.content));
+    }
+    i++;
+  }
+
+  return {
+    root: {
+      type: 'root', version: 1, direction: 'ltr', format: '', indent: 0,
+      children: nodes.length ? nodes : [makeParagraph('')],
+    },
+  };
+}
+
+// ─── Lexical → Block ─────────────────────────────────────────
+
+function extractText(children: { text?: string }[]): string {
+  return (children || []).map(c => c.text || '').join('');
+}
+
+export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): Block[] {
+  if (!lexical?.root?.children?.length) {
+    return [{ id: uid(), type: 'paragraph', content: '' }];
+  }
+
+  const blocks: Block[] = [];
+
+  for (const node of lexical.root.children as Record<string, unknown>[]) {
+    const text = extractText((node.children as { text?: string }[]) || []);
+
+    if (node.type === 'heading') {
+      const tagMap: Record<string, BlockType> = { h1: 'heading1', h2: 'heading2', h3: 'heading3' };
+      blocks.push({ id: uid(), type: tagMap[node.tag as string] || 'heading1', content: text });
+    } else if (node.type === 'quote') {
+      blocks.push({ id: uid(), type: 'quote', content: text });
+    } else if (node.type === 'code') {
+      blocks.push({ id: uid(), type: 'code', content: text });
+    } else if (node.type === 'horizontalrule') {
+      blocks.push({ id: uid(), type: 'divider', content: '' });
+    } else if (node.type === 'list') {
+      const listType: BlockType = node.listType === 'bullet' ? 'bulletList' : 'numberedList';
+      for (const item of (node.children as Record<string, unknown>[]) || []) {
+        const itemText = extractText((item.children as { text?: string }[]) || []);
+        blocks.push({ id: uid(), type: listType, content: itemText });
+      }
+    } else {
+      blocks.push({ id: uid(), type: 'paragraph', content: text });
+    }
+  }
+
+  return blocks.length ? blocks : [{ id: uid(), type: 'paragraph', content: '' }];
+}
+
+export function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
