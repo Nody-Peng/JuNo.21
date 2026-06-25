@@ -34,6 +34,13 @@ export default async function MyPostsPage() {
               </button>
             </form>
             <Link
+              href="/newsletter"
+              className="px-6 py-3 rounded-full bg-white/50 text-[#3B2D2A] text-[13px] font-semibold tracking-[0.15em] border border-[#3B2D2A]/10 hover:bg-white hover:border-[#3B2D2A]/30 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              發送電子報
+            </Link>
+            <Link
               href="/write"
               className="px-6 py-3 rounded-full bg-[#3B2D2A] text-[#F9F8F6] text-[13px] font-medium tracking-[0.15em] hover:bg-[#2a1f1c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2"
             >
