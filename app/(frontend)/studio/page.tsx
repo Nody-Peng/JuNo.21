@@ -25,48 +25,49 @@ export default function StudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F8F6] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <div className="min-h-[100dvh] bg-[#F9F8F6] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-100/40 via-[#F9F8F6] to-[#F9F8F6] flex items-center justify-center px-4 relative overflow-hidden">
+      <div className="w-full max-w-[400px] relative z-10">
         <div className="text-center mb-10">
-          <img src="/logo.png" alt="夏至原點" className="h-16 w-auto object-contain mx-auto mb-4 opacity-90" />
-          <h1 className="font-serif text-2xl font-bold text-[#3B2D2A] tracking-widest">編輯室</h1>
-          <p className="text-sm text-[#3B2D2A]/50 mt-1 tracking-wide">僅限受邀成員登入</p>
+          <img src="/logo.png" alt="夏至原點" className="h-16 w-auto object-contain mx-auto mb-6 opacity-90" />
+          <h1 className="font-serif text-3xl font-bold text-[#3B2D2A] tracking-[0.15em] ml-2">編輯室</h1>
+          <div className="w-8 h-px bg-[#3B2D2A]/20 mx-auto mt-4 mb-3" />
+          <p className="text-[10px] text-[#3B2D2A]/40 tracking-widest uppercase">Authorised Personnel Only</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-[#3B2D2A]/60 mb-1.5 tracking-wider uppercase">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              autoFocus
-              placeholder="your@email.com"
-              className="w-full px-4 py-3 rounded-xl border border-[#3B2D2A]/15 bg-white text-[#3B2D2A] placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-300/50 focus:border-amber-400 transition text-sm"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="bg-white/60 backdrop-blur-xl border border-white/40 p-8 sm:p-10 rounded-[2rem] shadow-[0_8px_32px_rgba(59,45,42,0.05)]">
+          <div className="space-y-6">
+            <div>
+              <label className="block text-[10px] font-semibold text-[#3B2D2A]/50 mb-2 tracking-widest uppercase ml-1">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                autoFocus
+                placeholder="your@email.com"
+                className="w-full px-4 py-3.5 rounded-2xl border-none bg-white/50 text-[#3B2D2A] placeholder-[#3B2D2A]/20 focus:outline-none focus:ring-1 focus:ring-[#3B2D2A]/20 focus:bg-white transition-all text-sm shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-[#3B2D2A]/60 mb-1.5 tracking-wider uppercase">
-              密碼
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl border border-[#3B2D2A]/15 bg-white text-[#3B2D2A] placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-300/50 focus:border-amber-400 transition text-sm"
-            />
+            <div>
+              <label className="block text-[10px] font-semibold text-[#3B2D2A]/50 mb-2 tracking-widest uppercase ml-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+                className="w-full px-4 py-3.5 rounded-2xl border-none bg-white/50 text-[#3B2D2A] placeholder-[#3B2D2A]/20 focus:outline-none focus:ring-1 focus:ring-[#3B2D2A]/20 focus:bg-white transition-all text-sm shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"
+              />
+            </div>
           </div>
 
           {error && (
-            <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
+            <div className="mt-6 px-4 py-3 rounded-xl bg-red-50/80 border border-red-100/50 text-red-600/90 text-xs text-center">
               {error}
             </div>
           )}
@@ -74,15 +75,11 @@ export default function StudioPage() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full py-3.5 rounded-xl bg-[#3B2D2A] text-[#F9F8F6] font-medium tracking-widest hover:bg-[#2a1f1c] transition-all disabled:opacity-60 disabled:cursor-not-allowed text-sm mt-2"
+            className="w-full mt-8 py-4 rounded-2xl bg-[#3B2D2A] text-[#F9F8F6] text-[13px] font-medium tracking-[0.2em] hover:bg-[#2a1f1c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none ml-[0.1em]"
           >
-            {isPending ? '登入中...' : '進入編輯室'}
+            {isPending ? '驗證中...' : '登入系統'}
           </button>
         </form>
-
-        <p className="text-center text-xs text-[#3B2D2A]/30 mt-8">
-          © 夏至原點 · 私密入口
-        </p>
       </div>
     </div>
   );

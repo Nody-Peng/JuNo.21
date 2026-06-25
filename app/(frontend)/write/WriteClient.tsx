@@ -107,35 +107,35 @@ export default function WriteClient({ token, userId, categories }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F8F6]">
+    <div className="min-h-screen bg-[#F9F8F6] relative">
       {/* ── Top Toolbar ── */}
-      <div className="sticky top-0 z-40 bg-[#F9F8F6]/95 backdrop-blur border-b border-[#3B2D2A]/8 px-6 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-[#3B2D2A]/5 px-6 py-4 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
         <button
           onClick={() => router.push('/my-posts')}
-          className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-[#3B2D2A] transition-colors"
+          className="flex items-center gap-2 text-[11px] font-semibold text-[#3B2D2A]/40 hover:text-[#3B2D2A] transition-colors tracking-widest uppercase"
         >
-          ← 返回
+          <span className="text-lg leading-none mt-[-2px]">&larr;</span> Back
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => handleSave(false)}
             disabled={saving}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-[#3B2D2A] bg-white border border-[#3B2D2A]/15 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-5 py-2.5 rounded-full text-[12px] font-semibold tracking-widest text-[#3B2D2A]/60 bg-white border border-[#3B2D2A]/10 hover:border-[#3B2D2A]/30 hover:text-[#3B2D2A] hover:shadow-sm transition-all duration-300 disabled:opacity-50 uppercase"
           >
-            儲存草稿
+            Save Draft
           </button>
           <button
             onClick={() => handleSave(true)}
             disabled={saving}
-            className="px-5 py-2 rounded-lg text-sm font-medium bg-[#3B2D2A] text-[#F9F8F6] hover:bg-[#2a1f1c] transition-colors disabled:opacity-50"
+            className="px-6 py-2.5 rounded-full text-[12px] font-bold tracking-widest bg-[#3B2D2A] text-[#F9F8F6] hover:bg-[#2a1f1c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 uppercase"
           >
-            {saving ? '發布中...' : '立即發布'}
+            {saving ? 'Publishing...' : 'Publish'}
           </button>
         </div>
       </div>
 
       {/* ── Main Editor Area ── */}
-      <div className="max-w-[720px] mx-auto px-8 md:px-6 py-12">
+      <div className="max-w-[720px] mx-auto px-8 md:px-6 py-16">
         {/* ── Cover Image ── */}
         <div
           onClick={() => coverInputRef.current?.click()}

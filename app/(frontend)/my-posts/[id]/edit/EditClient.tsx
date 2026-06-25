@@ -93,25 +93,25 @@ export default function EditClient({ token, userId, categories, post }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F9F8F6]">
+    <div className="min-h-screen bg-[#F9F8F6] relative">
       {/* Toolbar */}
-      <div className="sticky top-0 z-40 bg-[#F9F8F6]/95 backdrop-blur border-b border-[#3B2D2A]/8 px-6 py-3 flex items-center justify-between">
-        <button onClick={() => router.push('/my-posts')} className="text-sm text-gray-400 hover:text-[#3B2D2A]">
-          ← 返回
+      <div className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-[#3B2D2A]/5 px-6 py-4 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
+        <button onClick={() => router.push('/my-posts')} className="flex items-center gap-2 text-[11px] font-semibold text-[#3B2D2A]/40 hover:text-[#3B2D2A] transition-colors tracking-widest uppercase">
+          <span className="text-lg leading-none mt-[-2px]">&larr;</span> Back
         </button>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button onClick={() => handleSave(false)} disabled={saving}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-[#3B2D2A] bg-white border border-[#3B2D2A]/15 hover:bg-gray-50 disabled:opacity-50">
-            儲存草稿
+            className="px-5 py-2.5 rounded-full text-[12px] font-semibold tracking-widest text-[#3B2D2A]/60 bg-white border border-[#3B2D2A]/10 hover:border-[#3B2D2A]/30 hover:text-[#3B2D2A] hover:shadow-sm transition-all duration-300 disabled:opacity-50 uppercase">
+            Save Draft
           </button>
           <button onClick={() => handleSave(true)} disabled={saving}
-            className="px-5 py-2 rounded-lg text-sm font-medium bg-[#3B2D2A] text-[#F9F8F6] hover:bg-[#2a1f1c] disabled:opacity-50">
-            {saving ? '更新中...' : '更新發布'}
+            className="px-6 py-2.5 rounded-full text-[12px] font-bold tracking-widest bg-[#3B2D2A] text-[#F9F8F6] hover:bg-[#2a1f1c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 uppercase">
+            {saving ? 'Updating...' : 'Update & Publish'}
           </button>
         </div>
       </div>
 
-      <div className="max-w-[720px] mx-auto px-8 md:px-6 py-12">
+      <div className="max-w-[720px] mx-auto px-8 md:px-6 py-16">
         {/* Cover */}
         <div onClick={() => coverInputRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={handleDrop}
           className={`mb-8 rounded-2xl overflow-hidden cursor-pointer transition-all ${coverPreview ? 'aspect-video' : 'border-2 border-dashed border-gray-200 hover:border-amber-300 py-10 flex flex-col items-center gap-2 text-gray-300'}`}>

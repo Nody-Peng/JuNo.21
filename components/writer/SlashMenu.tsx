@@ -1,25 +1,41 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { BlockType } from '@/lib/blocks-to-lexical';
 
-interface SlashItem {
+export interface SlashItem {
   type: BlockType;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   desc: string;
   shortcut?: string;
 }
 
+const Icon = ({ children }: { children: React.ReactNode }) => (
+  <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#F5F2EE] text-[#3B2D2A]/60 shrink-0 group-hover:bg-[#3B2D2A] group-hover:text-[#F9F8F6] transition-all duration-150">
+    {children}
+  </span>
+);
+
+const ParagraphIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 4v16"/><path d="M17 4v16"/><path d="M19 4H9.5a4.5 4.5 0 0 0 0 9H13"/></svg>;
+const H1Icon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></svg>;
+const H2Icon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M21 18h-4c0-2.75 4-4.25 4-6a2 2 0 0 0-4 0"/></svg>;
+const H3Icon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2"/><path d="M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2"/></svg>;
+const QuoteIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>;
+const CodeIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>;
+const DividerIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+const ListIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+const ListOrderedIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>;
+
 export const SLASH_ITEMS: SlashItem[] = [
-  { type: 'paragraph',    icon: '¶',  label: '文字段落',  desc: '一般段落文字',       shortcut: 'Enter' },
-  { type: 'heading1',     icon: 'H1', label: '大標題',    desc: '最大的標題',          shortcut: '#' },
-  { type: 'heading2',     icon: 'H2', label: '中標題',    desc: '第二層標題',          shortcut: '##' },
-  { type: 'heading3',     icon: 'H3', label: '小標題',    desc: '第三層標題',          shortcut: '###' },
-  { type: 'quote',        icon: '❝',  label: '引用',      desc: '引用文字區塊',        shortcut: '>' },
-  { type: 'code',         icon: '<>', label: '程式碼',    desc: '程式碼區塊',          shortcut: '```' },
-  { type: 'divider',      icon: '—',  label: '分隔線',    desc: '水平分隔線',          shortcut: '---' },
-  { type: 'bulletList',   icon: '•',  label: '無序列表',  desc: '帶圓點的清單',        shortcut: '-' },
-  { type: 'numberedList', icon: '1.', label: '有序列表',  desc: '帶數字的清單',        shortcut: '1.' },
+  { type: 'paragraph',    icon: <Icon><ParagraphIcon /></Icon>,   label: '文字段落',  desc: '一般段落文字',   shortcut: '' },
+  { type: 'heading1',     icon: <Icon><H1Icon /></Icon>,  label: '大標題',    desc: '最大的標題',      shortcut: '#' },
+  { type: 'heading2',     icon: <Icon><H2Icon /></Icon>,  label: '中標題',    desc: '第二層標題',      shortcut: '##' },
+  { type: 'heading3',     icon: <Icon><H3Icon /></Icon>,  label: '小標題',    desc: '第三層標題',      shortcut: '###' },
+  { type: 'quote',        icon: <Icon><QuoteIcon /></Icon>,   label: '引用區塊',  desc: '強調引用的文字',  shortcut: '>' },
+  { type: 'code',         icon: <Icon><CodeIcon /></Icon>, label: '程式碼',  desc: '等寬程式碼區塊', shortcut: '```' },
+  { type: 'divider',      icon: <Icon><DividerIcon /></Icon>,   label: '分隔線',    desc: '水平分隔線',      shortcut: '---' },
+  { type: 'bulletList',   icon: <Icon><ListIcon /></Icon>,   label: '無序列表',  desc: '帶圓點的清單',    shortcut: '-' },
+  { type: 'numberedList', icon: <Icon><ListOrderedIcon /></Icon>,  label: '有序列表',  desc: '帶數字的清單',    shortcut: '1.' },
 ];
 
 interface Props {
@@ -31,21 +47,33 @@ interface Props {
 
 export default function SlashMenu({ query, position, onSelect, onClose }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const filtered = SLASH_ITEMS.filter(
-    item =>
-      !query ||
-      item.label.includes(query) ||
-      item.type.toLowerCase().includes(query.toLowerCase()),
+  const [selected, setSelected] = useState(0);
+
+  const filtered = SLASH_ITEMS.filter(item =>
+    !query ||
+    item.label.includes(query) ||
+    item.type.toLowerCase().includes(query.toLowerCase()),
   );
 
-  // Close on outside click
+  useEffect(() => { setSelected(0); }, [query]);
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
     };
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setSelected(s => (s + 1) % filtered.length); }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); setSelected(s => (s - 1 + filtered.length) % filtered.length); }
+      if (e.key === 'Enter')     { e.preventDefault(); if (filtered[selected]) onSelect(filtered[selected].type); }
+      if (e.key === 'Escape')    onClose();
+    };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [onClose]);
+    document.addEventListener('keydown', keyHandler, true);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      document.removeEventListener('keydown', keyHandler, true);
+    };
+  }, [onClose, filtered, selected, onSelect]);
 
   if (!filtered.length) return null;
 
@@ -53,26 +81,29 @@ export default function SlashMenu({ query, position, onSelect, onClose }: Props)
     <div
       ref={ref}
       style={{ top: position.top, left: position.left }}
-      className="fixed z-[9999] w-72 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden"
+      className="fixed z-[9999] w-[280px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12)] border border-black/5 overflow-hidden py-1.5"
     >
-      <div className="px-3 pt-2 pb-1 text-xs text-gray-400 font-medium tracking-wider uppercase">
+      <p className="px-3.5 pt-1 pb-2 text-[10px] font-semibold text-[#3B2D2A]/35 tracking-[0.12em] uppercase">
         區塊類型
-      </div>
+      </p>
       {filtered.map((item, idx) => (
         <button
           key={idx}
           onMouseDown={(e) => { e.preventDefault(); onSelect(item.type); }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-amber-50 transition-colors text-left group"
+          onMouseEnter={() => setSelected(idx)}
+          className={`group w-full flex items-center gap-3 px-3 py-2 transition-colors text-left ${
+            selected === idx ? 'bg-[#F5F2EE]' : 'hover:bg-[#F5F2EE]/60'
+          }`}
         >
-          <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 group-hover:bg-amber-100 text-sm font-bold text-gray-600 group-hover:text-amber-700 transition-colors shrink-0">
-            {item.icon}
-          </span>
+          {item.icon}
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-800">{item.label}</div>
-            <div className="text-xs text-gray-400">{item.desc}</div>
+            <div className="text-[13px] font-medium text-[#3B2D2A]">{item.label}</div>
+            <div className="text-[11px] text-[#3B2D2A]/40 mt-px">{item.desc}</div>
           </div>
           {item.shortcut && (
-            <span className="text-xs text-gray-300 font-mono shrink-0">{item.shortcut}</span>
+            <kbd className="text-[10px] text-[#3B2D2A]/25 font-mono bg-[#3B2D2A]/5 px-1.5 py-0.5 rounded shrink-0">
+              {item.shortcut}
+            </kbd>
           )}
         </button>
       ))}

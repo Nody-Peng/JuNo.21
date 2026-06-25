@@ -254,7 +254,7 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
         setSlashMenu({
           blockId: block.id,
           query,
-          position: { top: rect.bottom + window.scrollY + 4, left: rect.left + window.scrollX },
+          position: { top: rect.bottom + 4, left: rect.left },
         });
         updateBlock(block.id, { content: value });
         return;
@@ -327,7 +327,15 @@ export default function BlockEditor({ initialBlocks, onChange }: Props) {
         >
           {/* ── + Button ── */}
           <button
-            onMouseDown={(e) => { e.preventDefault(); insertBlockAfter(block.id); }}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const rect = e.currentTarget.getBoundingClientRect();
+              setSlashMenu({
+                blockId: block.id,
+                query: '',
+                position: { top: rect.bottom + 4, left: rect.left + 24 },
+              });
+            }}
             className={`absolute -left-8 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-md text-gray-300 hover:text-amber-500 hover:bg-amber-50 transition-all text-lg font-light leading-none ${
               hoveredBlock === block.id ? 'opacity-100' : 'opacity-0'
             }`}
