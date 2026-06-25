@@ -52,7 +52,6 @@ const ProductBlock: Block = {
         {
           name: 'productName',
           type: 'text',
-          required: true,
           label: '商品名稱',
         },
         {
@@ -63,7 +62,6 @@ const ProductBlock: Block = {
         {
           name: 'description',
           type: 'textarea',
-          required: true,
           label: '推薦理由 / 商品描述',
         },
         {
@@ -75,7 +73,6 @@ const ProductBlock: Block = {
           name: 'image',
           type: 'upload',
           relationTo: 'media',
-          required: true,
           label: '商品圖片',
           admin: {
             description: '建議上傳去背或正方形圖片 (建議長寬比 1:1，例如 600x600)',

@@ -135,9 +135,26 @@ export function blocksToLexical(blocks: Block[]) {
       case 'video':
         nodes.push({ type: 'block', fields: { blockType: 'video', url: block.content }, format: '', version: 2 });
         break;
-      case 'product':
-        nodes.push({ type: 'block', fields: { blockType: 'product', ...(block.data || {}) }, format: '', version: 2 });
+      case 'product': {
+        const payloadData = { ...(block.data || {}) };
+        if (payloadData.items && Array.isArray(payloadData.items)) {
+          payloadData.items = payloadData.items
+            .filter((item: any) => item.productName || item.description || item.price || item.link || item.image?.url)
+            .map((item: any) => {
+              const cleanedItem = { ...item };
+              if (cleanedItem.image && typeof cleanedItem.image === 'object') {
+                if (cleanedItem.image.id) {
+                  cleanedItem.image = cleanedItem.image.id;
+                } else {
+                  delete cleanedItem.image;
+                }
+              }
+              return cleanedItem;
+            });
+        }
+        nodes.push({ type: 'block', fields: { blockType: 'product', ...payloadData }, format: '', version: 2 });
         break;
+      }
       case 'table':
         nodes.push({ type: 'block', fields: { blockType: 'table', ...(block.data || {}) }, format: '', version: 2 });
         break;
