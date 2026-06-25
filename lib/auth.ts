@@ -21,12 +21,17 @@ export async function loginAction(email: string, password: string) {
 
     const cookieStore = await cookies();
 
+    // Calculate maxAge from Payload's exp or default to 2 hours
+    const exp = data.exp ? data.exp : Math.floor(Date.now() / 1000) + 2 * 60 * 60;
+    const maxAge = exp - Math.floor(Date.now() / 1000);
+    const validMaxAge = maxAge > 0 ? maxAge : 60 * 60 * 2;
+
     // Secure httpOnly cookie for the JWT token
-    cookieStore.set('writer-token', data.token, {
+    cookieStore.set('payload-token', data.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 7, // 7 hours
+      maxAge: validMaxAge,
       path: '/',
     });
 
@@ -38,7 +43,7 @@ export async function loginAction(email: string, password: string) {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 7,
+      maxAge: validMaxAge,
       path: '/',
     });
 
@@ -50,7 +55,8 @@ export async function loginAction(email: string, password: string) {
 
 export async function logoutAction() {
   const cookieStore = await cookies();
-  cookieStore.delete('writer-token');
+  cookieStore.delete('payload-token');
+  cookieStore.delete('writer-token'); // Clear legacy token
   cookieStore.delete('writer-user');
   redirect('/');
 }
@@ -58,10 +64,24 @@ export async function logoutAction() {
 export async function getServerAuth(): Promise<{ token: string; user: { id: number; email: string } } | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('writer-token')?.value;
+    // Support both new and legacy token names for smooth transition
+    const token = cookieStore.get('payload-token')?.value || cookieStore.get('writer-token')?.value;
     const userStr = cookieStore.get('writer-user')?.value;
 
     if (!token || !userStr) return null;
+
+    // Check JWT expiration
+    const parts = token.split('.');
+    if (parts.length === 3) {
+      try {
+        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+        if (payload.exp && payload.exp * 1000 < Date.now()) {
+          return null; // Token expired
+        }
+      } catch (e) {
+        // Ignore parse error
+      }
+    }
 
     return { token, user: JSON.parse(userStr) };
   } catch {
