@@ -47,6 +47,7 @@ const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
   numberedList: '列表項目',
   map:          '貼上 Google Maps Embed HTML...',
   video:        '貼上 YouTube 或 Vimeo 網址...',
+  product:      '', // Handled by custom UI
   table:        '', // Handled by custom UI
   image:        '', // Handled by custom UI
   button:       '', // Handled by custom UI
