@@ -32,6 +32,7 @@ const TableIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="no
 const TOCIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>;
 
 const ImageIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+const ButtonIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="12" x="3" y="6" rx="3" ry="3"/><path d="M12 12h.01"/></svg>;
 
 export const SLASH_ITEMS: SlashItem[] = [
   { type: 'paragraph',    icon: <Icon><ParagraphIcon /></Icon>,   label: '文字段落',  desc: '一般段落文字',   shortcut: '' },
@@ -46,9 +47,9 @@ export const SLASH_ITEMS: SlashItem[] = [
   { type: 'table',        icon: <Icon><TableIcon /></Icon>,label: '表格',      desc: '插入資料表格', shortcut: '' },
   { type: 'toc',          icon: <Icon><TOCIcon /></Icon>,label: '文章目錄',  desc: '自動產生標題目錄', shortcut: '' },
   { type: 'map',          icon: <Icon><MapIcon /></Icon>,  label: '地圖',      desc: '嵌入 Google Maps', shortcut: '' },
-  { type: 'video',        icon: <Icon><VideoIcon /></Icon>,label: '影片',      desc: '嵌入 YouTube 影片', shortcut: '' },
   { type: 'product',      icon: <Icon><ProductIcon /></Icon>,label: '商品卡片', desc: '嵌入推薦商品區塊', shortcut: '' },
   { type: 'image',        icon: <Icon><ImageIcon /></Icon>,label: '單張圖片', desc: '上傳圖片', shortcut: '' },
+  { type: 'button',       icon: <Icon><ButtonIcon /></Icon>,label: '按鈕',     desc: '插入行動呼籲按鈕', shortcut: '' },
 ];
 
 interface Props {

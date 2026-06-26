@@ -29,8 +29,8 @@ const BLOCK_STYLE: Record<BlockType, string> = {
   map:          'text-[14px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   video:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   product:      'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
-  table:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   image:        '', // Handled by custom UI
+  button:       '', // Handled by custom UI
   toc:          'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
 };
 
@@ -46,9 +46,9 @@ const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
   numberedList: '列表項目',
   map:          '貼上 Google Maps Embed HTML...',
   video:        '貼上 YouTube 或 Vimeo 網址...',
-  product:      '', // Handled by custom UI
   table:        '', // Handled by custom UI
   image:        '', // Handled by custom UI
+  button:       '', // Handled by custom UI
   toc:          '', // Handled by custom UI
 };
 
@@ -559,6 +559,39 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                       )}
                     </div>
                   )}
+                  <textarea
+                    ref={el => {
+                      if (el) textareaRefs.current.set(block.id, el);
+                      else textareaRefs.current.delete(block.id);
+                    }}
+                    value=""
+                    onChange={() => {}}
+                    onKeyDown={e => handleKeyDown(e, block)}
+                    className="w-0 h-0 opacity-0 absolute"
+                  />
+                </div>
+              ) : block.type === 'button' ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🖱️</span>
+                    <span className="text-xs font-bold text-gray-600 tracking-wider uppercase">按鈕 (Button)</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row gap-3">
+                    <input
+                      type="text"
+                      placeholder="按鈕文字 (例：訂閱電子報)"
+                      value={block.data?.text || ''}
+                      onChange={e => updateBlock(block.id, { data: { ...block.data, text: e.target.value } })}
+                      className="flex-1 border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400 font-medium"
+                    />
+                    <input
+                      type="text"
+                      placeholder="連結網址 (URL)"
+                      value={block.data?.url || ''}
+                      onChange={e => updateBlock(block.id, { data: { ...block.data, url: e.target.value } })}
+                      className="flex-[2] border border-gray-200 rounded-md px-3 py-2 text-sm outline-none focus:border-amber-400 font-medium"
+                    />
+                  </div>
                   <textarea
                     ref={el => {
                       if (el) textareaRefs.current.set(block.id, el);

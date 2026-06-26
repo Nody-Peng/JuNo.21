@@ -15,6 +15,7 @@ export type BlockType =
   | 'product'
   | 'table'
   | 'image'
+  | 'button'
   | 'toc';
 
 export interface Block {
@@ -170,6 +171,9 @@ export function blocksToLexical(blocks: Block[]) {
           });
         }
         break;
+      case 'button':
+        nodes.push({ type: 'block', fields: { blockType: 'button', ...(block.data || {}) }, format: '', version: 2 });
+        break;
       case 'toc':
         nodes.push({ type: 'block', fields: { blockType: 'toc' }, format: '', version: 2 });
         break;
@@ -234,6 +238,8 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
         blocks.push({ id: uid(), type: 'product', content: '', data: fields });
       } else if (fields?.blockType === 'table') {
         blocks.push({ id: uid(), type: 'table', content: '', data: fields });
+      } else if (fields?.blockType === 'button') {
+        blocks.push({ id: uid(), type: 'button', content: '', data: fields });
       } else if (fields?.blockType === 'toc') {
         blocks.push({ id: uid(), type: 'toc', content: '' });
       }

@@ -206,6 +206,22 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
       const { sectionTitle, items } = node.fields;
       if (!items || items.length === 0) return null;
       return <ProductCarousel items={items} sectionTitle={sectionTitle} />;
+    },
+    button: ({ node }: { node: any }) => {
+      const { text, url } = node.fields;
+      if (!text || !url) return null;
+      return (
+        <div className="my-10 flex justify-center not-prose">
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-amber-700 hover:bg-amber-800 text-white rounded-full font-medium tracking-wide transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-[15px]"
+          >
+            {text}
+          </a>
+        </div>
+      );
     }
   }
 });
@@ -297,9 +313,9 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
         </header>
 
         {/* Feature Image Placeholder or Actual Image */}
-        <div className="w-full aspect-[16/9] md:aspect-[21/9] bg-stone-200 mb-16 overflow-hidden rounded-sm shadow-sm">
+        <div className="w-full aspect-[1200/630] bg-stone-200 mb-16 overflow-hidden rounded-sm shadow-sm flex items-center justify-center">
            <img 
-             src={post.heroImage?.url || `https://picsum.photos/seed/${post.id}/1200/600`} 
+             src={post.heroImage?.url || `https://picsum.photos/seed/${post.id}/1200/630`} 
              alt={post.heroImage?.alt || post.title}
              className="w-full h-full object-cover"
            />
