@@ -48,6 +48,7 @@ const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
   video:        '貼上 YouTube 或 Vimeo 網址...',
   product:      '', // Handled by custom UI
   table:        '', // Handled by custom UI
+  image:        '', // Handled by custom UI
   toc:          '', // Handled by custom UI
 };
 
