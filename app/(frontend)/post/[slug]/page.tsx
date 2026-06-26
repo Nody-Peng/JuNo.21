@@ -211,14 +211,18 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
       const { text, url } = node.fields;
       if (!text || !url) return null;
       return (
-        <div className="my-10 flex justify-center not-prose">
+        <div className="my-12 flex justify-center w-full not-prose">
           <a
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-amber-700 hover:bg-amber-800 text-white rounded-full font-medium tracking-wide transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-[15px]"
+            className="group relative inline-flex items-center justify-center px-10 py-4 bg-[#3B2D2A] text-white !text-white !no-underline rounded-full font-medium tracking-widest transition-all shadow-[0_8px_30px_rgb(59,45,42,0.2)] hover:shadow-[0_12px_40px_rgb(59,45,42,0.3)] hover:-translate-y-1 text-[15px] overflow-hidden"
           >
-            {text}
+            <span className="relative z-10 flex items-center gap-2">
+              {text}
+              <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </span>
+            <div className="absolute inset-0 bg-white/10 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
           </a>
         </div>
       );
