@@ -29,6 +29,7 @@ const BLOCK_STYLE: Record<BlockType, string> = {
   map:          'text-[14px] font-mono bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   video:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   product:      'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
+  table:        '', // Handled by custom UI
   image:        '', // Handled by custom UI
   button:       '', // Handled by custom UI
   toc:          'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
