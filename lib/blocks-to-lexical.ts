@@ -14,6 +14,7 @@ export type BlockType =
   | 'video'
   | 'product'
   | 'table'
+  | 'image'
   | 'toc';
 
 export interface Block {
@@ -173,6 +174,17 @@ export function blocksToLexical(blocks: Block[]) {
       case 'table':
         nodes.push({ type: 'block', fields: { blockType: 'table', ...(block.data || {}) }, format: '', version: 2 });
         break;
+      case 'image':
+        if (block.data?.image?.id) {
+          nodes.push({
+            type: 'upload',
+            relationTo: 'media',
+            value: { id: block.data.image.id },
+            format: '',
+            version: 1,
+          });
+        }
+        break;
       case 'toc':
         nodes.push({ type: 'block', fields: { blockType: 'toc' }, format: '', version: 2 });
         break;
@@ -240,6 +252,9 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
       } else if (fields?.blockType === 'toc') {
         blocks.push({ id: uid(), type: 'toc', content: '' });
       }
+    } else if (node.type === 'upload' && node.relationTo === 'media') {
+      const mediaDoc = node.value as any;
+      blocks.push({ id: uid(), type: 'image', content: '', data: { image: mediaDoc } });
     } else {
       blocks.push({ id: uid(), type: 'paragraph', content: text });
     }

@@ -4,6 +4,7 @@ import configPromise from '@/payload.config';
 import { RichText, JSXConvertersFunction } from '@payloadcms/richtext-lexical/react';
 import type { Metadata } from 'next';
 import ProductCarousel from '@/components/ProductCarousel';
+import React from 'react';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -40,6 +41,18 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
     const id = text.toLowerCase().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '') || undefined;
     const Tag = tag;
     return <Tag id={id} className="scroll-mt-24">{nodesToJSX({ nodes: node.children })}</Tag>;
+  },
+  upload: ({ node }: { node: any }) => {
+    return (
+      <div className="w-full my-10 flex justify-center">
+        <img 
+          src={node.value?.url} 
+          alt={node.value?.alt || ''} 
+          className="max-w-full rounded-2xl shadow-sm object-contain" 
+          style={{ maxHeight: '600px' }}
+        />
+      </div>
+    );
   },
   blocks: {
     map: ({ node }: { node: any }) => (

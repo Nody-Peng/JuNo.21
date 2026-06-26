@@ -31,6 +31,8 @@ const ProductIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="
 const TableIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>;
 const TOCIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>;
 
+const ImageIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+
 export const SLASH_ITEMS: SlashItem[] = [
   { type: 'paragraph',    icon: <Icon><ParagraphIcon /></Icon>,   label: '文字段落',  desc: '一般段落文字',   shortcut: '' },
   { type: 'heading1',     icon: <Icon><H1Icon /></Icon>,  label: '大標題',    desc: '最大的標題',      shortcut: '#' },
@@ -46,6 +48,7 @@ export const SLASH_ITEMS: SlashItem[] = [
   { type: 'map',          icon: <Icon><MapIcon /></Icon>,  label: '地圖',      desc: '嵌入 Google Maps', shortcut: '' },
   { type: 'video',        icon: <Icon><VideoIcon /></Icon>,label: '影片',      desc: '嵌入 YouTube 影片', shortcut: '' },
   { type: 'product',      icon: <Icon><ProductIcon /></Icon>,label: '商品卡片', desc: '嵌入推薦商品區塊', shortcut: '' },
+  { type: 'image',        icon: <Icon><ImageIcon /></Icon>,label: '單張圖片', desc: '上傳圖片', shortcut: '' },
 ];
 
 interface Props {
