@@ -147,6 +147,25 @@ const TOCBlock: Block = {
   ]
 };
 
+const ButtonBlock: Block = {
+  slug: 'button',
+  labels: { singular: '按鈕 (Button)', plural: '按鈕 (Button)' },
+  fields: [
+    {
+      name: 'text',
+      type: 'text',
+      label: '按鈕文字',
+      required: true,
+    },
+    {
+      name: 'url',
+      type: 'text',
+      label: '連結網址 (URL)',
+      required: true,
+    }
+  ]
+};
+
 export default buildConfig({
   admin: {
     user: 'users',
@@ -314,7 +333,7 @@ export default buildConfig({
             features: ({ defaultFeatures }) => [
               ...defaultFeatures,
               BlocksFeature({
-                blocks: [MapBlock, VideoBlock, ProductBlock, TableBlock, TOCBlock],
+                blocks: [MapBlock, VideoBlock, ProductBlock, TableBlock, TOCBlock, ButtonBlock],
               }),
             ],
           }),
