@@ -30,6 +30,7 @@ const BLOCK_STYLE: Record<BlockType, string> = {
   video:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   product:      'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
   table:        'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
+  image:        '', // Handled by custom UI
   toc:          'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
 };
 
