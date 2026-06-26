@@ -35,6 +35,36 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 const createConverters = (headings: { text: string; id: string; tag: string }[]): JSXConvertersFunction => ({ defaultConverters }) => ({
   ...defaultConverters,
+  text: ({ node }: { node: any }) => {
+    let text = node.text || '';
+    const colorRegex = /\{color:([^}]+)\}([\s\S]*?)\{\/color\}/g;
+    
+    let rendered: React.ReactNode = text;
+    if (text.includes('{color:')) {
+      const parts = [];
+      let lastIndex = 0;
+      let match;
+      let idx = 0;
+      while ((match = colorRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push(text.slice(lastIndex, match.index));
+        }
+        parts.push(<span key={`c-${idx++}`} style={{ color: match[1] }}>{match[2]}</span>);
+        lastIndex = colorRegex.lastIndex;
+      }
+      if (lastIndex < text.length) {
+        parts.push(text.slice(lastIndex));
+      }
+      rendered = <React.Fragment>{parts}</React.Fragment>;
+    }
+    
+    if (node.format & 1) rendered = <strong key="b">{rendered}</strong>;
+    if (node.format & 2) rendered = <em key="i">{rendered}</em>;
+    if (node.format & 8) rendered = <u key="u">{rendered}</u>;
+    if (node.format & 16) rendered = <code key="c">{rendered}</code>;
+    
+    return rendered;
+  },
   heading: ({ node, nodesToJSX }: { node: any, nodesToJSX: any }) => {
     const tag = node.tag as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
     const text = node.children?.map((c: any) => c.text || '').join('') || '';

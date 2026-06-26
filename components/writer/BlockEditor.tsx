@@ -501,7 +501,76 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
               {block.type === 'map' && <div className="text-xs font-semibold text-gray-500 mb-1 tracking-wider uppercase">📍 Google Maps Embed HTML</div>}
               {block.type === 'video' && <div className="text-xs font-semibold text-gray-500 mb-1 tracking-wider uppercase">▶️ Video URL</div>}
 
-              {block.type === 'product' ? (
+              {block.type === 'image' ? (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">🖼️</span>
+                    <span className="text-xs font-bold text-gray-600 tracking-wider uppercase">單張圖片 (Image)</span>
+                  </div>
+                  {block.data?.image?.url ? (
+                    <div className="relative group rounded-md overflow-hidden bg-gray-100 flex justify-center w-full max-h-[400px]">
+                      <img src={block.data.image.url} alt="" className="object-contain max-h-[400px]" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        {onUploadImage && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                const input = e.currentTarget.nextElementSibling as HTMLInputElement;
+                                if (input) input.click();
+                              }}
+                              className="cursor-pointer bg-white text-gray-800 px-4 py-2 rounded-lg font-medium text-sm shadow-md hover:scale-105 transition-transform"
+                            >
+                              更換圖片
+                            </button>
+                            <input type="file" accept="image/*" className="hidden" onChange={async e => {
+                              const file = e.target.files?.[0];
+                              if (!file) return;
+                              const res = await onUploadImage(file);
+                              if (res) updateBlock(block.id, { data: { image: { id: res.id, url: res.url } } });
+                            }} />
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center bg-white/50 hover:border-amber-400 transition-colors">
+                      {onUploadImage ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              const input = e.currentTarget.nextElementSibling as HTMLInputElement;
+                              if (input) input.click();
+                            }}
+                            className="cursor-pointer bg-amber-50 text-amber-700 px-4 py-2 rounded-md text-sm font-medium border border-amber-200 hover:bg-amber-100 transition-colors"
+                          >
+                            上傳圖片
+                          </button>
+                          <input type="file" accept="image/*" className="hidden" onChange={async e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const res = await onUploadImage(file);
+                            if (res) updateBlock(block.id, { data: { image: { id: res.id, url: res.url } } });
+                          }} />
+                        </>
+                      ) : (
+                        <span className="text-gray-400 text-sm">圖片上傳未啟用</span>
+                      )}
+                    </div>
+                  )}
+                  <textarea
+                    ref={el => {
+                      if (el) textareaRefs.current.set(block.id, el);
+                      else textareaRefs.current.delete(block.id);
+                    }}
+                    value=""
+                    onChange={() => {}}
+                    onKeyDown={e => handleKeyDown(e, block)}
+                    className="w-0 h-0 opacity-0 absolute"
+                  />
+                </div>
+              ) : block.type === 'product' ? (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xl">🛍️</span>
