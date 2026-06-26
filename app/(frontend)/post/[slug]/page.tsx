@@ -100,19 +100,45 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
                   <tr key={rIdx} className="hover:bg-gray-50/50 transition-colors">
                     {row.cells && row.cells.map((cell: any, cIdx: number) => {
                       let textContent = cell.text || '';
+                      
+                      const colorRegex = /\{color:([^}]+)\}([\s\S]*?)\{\/color\}/g;
                       const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-                      let parts = [];
-                      let lastIndex = 0;
-                      let match;
-                      while ((match = linkRegex.exec(textContent)) !== null) {
-                        if (match.index > lastIndex) {
-                          parts.push(textContent.slice(lastIndex, match.index));
+
+                      const colorNodes = [];
+                      let colorLastIndex = 0;
+                      let colorMatch;
+                      while ((colorMatch = colorRegex.exec(textContent)) !== null) {
+                        if (colorMatch.index > colorLastIndex) {
+                          colorNodes.push({ text: textContent.slice(colorLastIndex, colorMatch.index), color: '' });
                         }
-                        parts.push(<a key={`link-${rIdx}-${cIdx}-${match.index}`} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-amber-700 hover:underline">{match[1]}</a>);
-                        lastIndex = linkRegex.lastIndex;
+                        colorNodes.push({ text: colorMatch[2], color: colorMatch[1] });
+                        colorLastIndex = colorRegex.lastIndex;
                       }
-                      if (lastIndex < textContent.length) {
-                        parts.push(textContent.slice(lastIndex));
+                      if (colorLastIndex < textContent.length) {
+                        colorNodes.push({ text: textContent.slice(colorLastIndex), color: '' });
+                      }
+
+                      let parts: React.ReactNode[] = [];
+                      let partIdx = 0;
+                      for (const node of colorNodes) {
+                        let linkLastIndex = 0;
+                        let linkMatch;
+                        while ((linkMatch = linkRegex.exec(node.text)) !== null) {
+                          if (linkMatch.index > linkLastIndex) {
+                            const t = node.text.slice(linkLastIndex, linkMatch.index);
+                            parts.push(node.color ? <span key={`t-${rIdx}-${cIdx}-${partIdx++}`} style={{ color: node.color }}>{t}</span> : <React.Fragment key={`t-${rIdx}-${cIdx}-${partIdx++}`}>{t}</React.Fragment>);
+                          }
+                          parts.push(
+                            <a key={`l-${rIdx}-${cIdx}-${partIdx++}`} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-amber-700 hover:underline">
+                              {node.color ? <span style={{ color: node.color }}>{linkMatch[1]}</span> : linkMatch[1]}
+                            </a>
+                          );
+                          linkLastIndex = linkRegex.lastIndex;
+                        }
+                        if (linkLastIndex < node.text.length) {
+                          const t = node.text.slice(linkLastIndex);
+                          parts.push(node.color ? <span key={`t-${rIdx}-${cIdx}-${partIdx++}`} style={{ color: node.color }}>{t}</span> : <React.Fragment key={`t-${rIdx}-${cIdx}-${partIdx++}`}>{t}</React.Fragment>);
+                        }
                       }
                       return (
                         <td key={cIdx} className="px-5 py-4 align-top text-gray-800 leading-relaxed whitespace-pre-wrap">

@@ -369,10 +369,53 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
     focusBlock(blockId);
   }, [slashMenu, updateBlock, insertBlockAfter, focusBlock, autoResize]);
 
+  const applyFormatting = useCallback((prefix: string, suffix: string) => {
+    const el = document.activeElement as HTMLTextAreaElement | HTMLInputElement;
+    if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
+      const start = el.selectionStart || 0;
+      const end = el.selectionEnd || 0;
+      const val = el.value;
+      const selected = val.substring(start, end);
+      
+      const newVal = val.substring(0, start) + prefix + selected + suffix + val.substring(end);
+      
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window[el.tagName === 'TEXTAREA' ? 'HTMLTextAreaElement' : 'HTMLInputElement'].prototype, 
+        "value"
+      )?.set;
+      
+      nativeInputValueSetter?.call(el, newVal);
+      const event = new Event('input', { bubbles: true });
+      el.dispatchEvent(event);
+      
+      setTimeout(() => {
+        el.focus();
+        el.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
+      }, 0);
+    }
+  }, []);
+
   // ── Render ────────────────────────────────────────────────
 
   return (
     <div className="relative w-full min-h-[400px]">
+      {/* ── Formatting Toolbar ── */}
+      <div className="sticky top-4 z-40 bg-white/90 backdrop-blur-md border border-gray-200 p-2.5 mb-8 flex flex-wrap gap-3 items-center rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)]">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">反白文字後套用格式：</span>
+        
+        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('[', '](url)'); }} className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded border border-gray-200 font-medium transition-colors" title="插入連結">
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          連結
+        </button>
+
+        <div className="w-px h-5 bg-gray-300 mx-1"></div>
+
+        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#DC2626}', '{/color}'); }} className="w-5 h-5 rounded-full bg-red-600 hover:scale-125 transition-transform border border-red-700 shadow-sm" title="紅色文字"></button>
+        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#D97706}', '{/color}'); }} className="w-5 h-5 rounded-full bg-amber-600 hover:scale-125 transition-transform border border-amber-700 shadow-sm" title="橘色文字"></button>
+        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#059669}', '{/color}'); }} className="w-5 h-5 rounded-full bg-emerald-600 hover:scale-125 transition-transform border border-emerald-700 shadow-sm" title="綠色文字"></button>
+        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#2563EB}', '{/color}'); }} className="w-5 h-5 rounded-full bg-blue-600 hover:scale-125 transition-transform border border-blue-700 shadow-sm" title="藍色文字"></button>
+        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#4B5563}', '{/color}'); }} className="w-5 h-5 rounded-full bg-gray-600 hover:scale-125 transition-transform border border-gray-700 shadow-sm" title="灰色文字"></button>
+      </div>
       {blocks.map((block) => (
         <div
           key={block.id}

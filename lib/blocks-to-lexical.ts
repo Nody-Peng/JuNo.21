@@ -29,58 +29,73 @@ function makeText(text: string) {
   return { type: 'text', text, version: 1, format: 0, detail: 0, mode: 'normal', style: '' };
 }
 
-function parseTextWithLinks(text: string) {
+function parseTextWithFormatting(text: string) {
   if (!text) return [makeText('')];
   
+  const colorRegex = /\{color:([^}]+)\}([\s\S]*?)\{\/color\}/g;
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-  const nodes = [];
+
+  // 1. Split by color
+  const colorNodes = [];
   let lastIndex = 0;
   let match;
-
-  while ((match = linkRegex.exec(text)) !== null) {
+  while ((match = colorRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      nodes.push(makeText(text.slice(lastIndex, match.index)));
+      colorNodes.push({ text: text.slice(lastIndex, match.index), style: '' });
     }
-    nodes.push({
-      type: 'link',
-      version: 2,
-      direction: 'ltr',
-      format: '',
-      indent: 0,
-      fields: {
-        linkType: 'custom',
-        url: match[2],
-        newTab: true,
-      },
-      children: [makeText(match[1])],
-    });
-    lastIndex = linkRegex.lastIndex;
+    colorNodes.push({ text: match[2], style: `color: ${match[1]};` });
+    lastIndex = colorRegex.lastIndex;
   }
   if (lastIndex < text.length) {
-    nodes.push(makeText(text.slice(lastIndex)));
+    colorNodes.push({ text: text.slice(lastIndex), style: '' });
   }
 
-  return nodes.length > 0 ? nodes : [makeText('')];
+  // 2. Process each node for links
+  const finalNodes: any[] = [];
+  for (const node of colorNodes) {
+    let linkLastIndex = 0;
+    let linkMatch;
+    while ((linkMatch = linkRegex.exec(node.text)) !== null) {
+      if (linkMatch.index > linkLastIndex) {
+        finalNodes.push({ type: 'text', text: node.text.slice(linkLastIndex, linkMatch.index), version: 1, format: 0, detail: 0, mode: 'normal', style: node.style });
+      }
+      finalNodes.push({
+        type: 'link',
+        version: 2,
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        fields: { linkType: 'custom', url: linkMatch[2], newTab: true },
+        children: [{ type: 'text', text: linkMatch[1], version: 1, format: 0, detail: 0, mode: 'normal', style: node.style }]
+      });
+      linkLastIndex = linkRegex.lastIndex;
+    }
+    if (linkLastIndex < node.text.length) {
+      finalNodes.push({ type: 'text', text: node.text.slice(linkLastIndex), version: 1, format: 0, detail: 0, mode: 'normal', style: node.style });
+    }
+  }
+
+  return finalNodes.length > 0 ? finalNodes : [makeText('')];
 }
 
 function makeParagraph(text: string) {
   return {
     type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, textFormat: 0,
-    children: parseTextWithLinks(text),
+    children: parseTextWithFormatting(text),
   };
 }
 
 function makeHeading(text: string, tag: 'h1' | 'h2' | 'h3') {
   return {
     type: 'heading', tag, version: 1, direction: 'ltr', format: '', indent: 0,
-    children: parseTextWithLinks(text),
+    children: parseTextWithFormatting(text),
   };
 }
 
 function makeQuote(text: string) {
   return {
     type: 'quote', version: 1, direction: 'ltr', format: '', indent: 0,
-    children: parseTextWithLinks(text),
+    children: parseTextWithFormatting(text),
   };
 }
 
@@ -94,7 +109,7 @@ function makeCode(text: string) {
 function makeListItem(text: string) {
   return {
     type: 'listitem', version: 1, value: 1, format: '', indent: 0, direction: 'ltr',
-    children: parseTextWithLinks(text),
+    children: parseTextWithFormatting(text),
   };
 }
 
