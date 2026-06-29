@@ -68,7 +68,7 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
   heading: ({ node, nodesToJSX }: { node: any, nodesToJSX: any }) => {
     const tag = node.tag as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
     const text = node.children?.map((c: any) => c.text || '').join('') || '';
-    const id = text.toLowerCase().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '') || undefined;
+    const id = text.trim().replace(/\s+/g, '-') || `heading-${Math.random().toString(36).substr(2, 5)}`;
     const Tag = tag;
     return <Tag id={id} className="scroll-mt-24">{nodesToJSX({ nodes: node.children })}</Tag>;
   },
@@ -272,7 +272,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
     for (const node of post.content.root.children) {
       if (node.type === 'heading' && (node.tag === 'h1' || node.tag === 'h2')) {
         const text = node.children?.map((c: any) => c.text || '').join('') || '';
-        const id = text.toLowerCase().replace(/[\s\W-]+/g, '-').replace(/^-+|-+$/g, '') || `heading-${headings.length}`;
+        const id = text.trim().replace(/\s+/g, '-') || `heading-${headings.length}`;
         if (text) headings.push({ text, id, tag: node.tag });
       }
     }

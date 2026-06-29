@@ -17,6 +17,7 @@ export default function WriteClient({ token, userId, categories }: Props) {
   const [excerpt, setExcerpt] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [series, setSeries] = useState('');
+  const [slug, setSlug] = useState('');
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -72,6 +73,7 @@ export default function WriteClient({ token, userId, categories }: Props) {
         publishedDate: new Date().toISOString(),
         category: selectedCategories.length ? selectedCategories : undefined,
         series: series.trim() || undefined,
+        slug: slug.trim() || undefined,
         heroImage: heroImageId || undefined,
         status: publish ? 'published' : 'draft',
       };
@@ -92,7 +94,7 @@ export default function WriteClient({ token, userId, categories }: Props) {
     } finally {
       setSaving(false);
     }
-  }, [title, excerpt, blocks, coverFile, token, userId, selectedCategories, series, router]);
+  }, [title, excerpt, blocks, coverFile, token, userId, selectedCategories, series, slug, router]);
 
   if (saved) {
     return (
@@ -211,14 +213,23 @@ export default function WriteClient({ token, userId, categories }: Props) {
           }}
         />
 
-        {/* ── Series ── */}
-        <input
-          type="text"
-          value={series}
-          onChange={e => setSeries(e.target.value)}
-          placeholder="系列名稱（選填，如：抗癌日記）"
-          className="w-full outline-none bg-transparent text-xs text-gray-300 placeholder-gray-200 border-none focus:ring-0 p-0 mb-8"
-        />
+        {/* ── Series & Slug ── */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <input
+            type="text"
+            value={series}
+            onChange={e => setSeries(e.target.value)}
+            placeholder="系列名稱（選填，如：抗癌日記）"
+            className="flex-1 outline-none bg-transparent text-xs text-gray-300 placeholder-gray-200 border-none focus:ring-0 p-0"
+          />
+          <input
+            type="text"
+            value={slug}
+            onChange={e => setSlug(e.target.value)}
+            placeholder="網址 Slug（選填，如：my-first-post）"
+            className="flex-1 outline-none bg-transparent text-xs text-gray-300 placeholder-gray-200 border-none focus:ring-0 p-0 md:text-right"
+          />
+        </div>
 
         {/* ── Divider ── */}
         <hr className="border-gray-100 mb-10" />

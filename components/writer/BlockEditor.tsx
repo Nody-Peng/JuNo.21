@@ -407,6 +407,11 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
       <div className="sticky top-4 z-40 bg-white/90 backdrop-blur-md border border-gray-200 p-2.5 mb-8 flex flex-wrap gap-3 items-center rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)]">
         <span className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">反白文字後套用格式：</span>
         
+        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('**', '**'); }} className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded border border-gray-200 font-medium transition-colors" title="粗體 (Bold)">
+          <span className="font-bold font-serif text-[14px] leading-none">B</span>
+          粗體
+        </button>
+        
         <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('[', '](url)'); }} className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded border border-gray-200 font-medium transition-colors" title="插入連結">
           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           連結

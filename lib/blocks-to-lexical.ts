@@ -31,6 +31,25 @@ function makeText(text: string) {
   return { type: 'text', text, version: 1, format: 0, detail: 0, mode: 'normal', style: '' };
 }
 
+function parseBold(text: string) {
+  if (!text) return [makeText('')];
+  const boldRegex = /\*\*([^*]+)\*\*/g;
+  const nodes = [];
+  let lastIndex = 0;
+  let match;
+  while ((match = boldRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(makeText(text.slice(lastIndex, match.index)));
+    }
+    nodes.push(makeText(match[1], 1)); // format: 1 is bold in Lexical
+    lastIndex = boldRegex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    nodes.push(makeText(text.slice(lastIndex)));
+  }
+  return nodes.length > 0 ? nodes : [makeText('')];
+}
+
 function parseTextWithLinks(text: string) {
   if (!text) return [makeText('')];
   
@@ -41,7 +60,7 @@ function parseTextWithLinks(text: string) {
 
   while ((match = linkRegex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      nodes.push(makeText(text.slice(lastIndex, match.index)));
+      nodes.push(...parseBold(text.slice(lastIndex, match.index)));
     }
     nodes.push({
       type: 'link',
@@ -54,12 +73,12 @@ function parseTextWithLinks(text: string) {
         url: match[2],
         newTab: true,
       },
-      children: [makeText(match[1])],
+      children: parseBold(match[1]),
     });
     lastIndex = linkRegex.lastIndex;
   }
   if (lastIndex < text.length) {
-    nodes.push(makeText(text.slice(lastIndex)));
+    nodes.push(...parseBold(text.slice(lastIndex)));
   }
 
   return nodes.length > 0 ? nodes : [makeText('')];
@@ -117,7 +136,13 @@ export function blocksToLexical(blocks: Block[]) {
       nodes.push({
         type: 'list', listType, version: 1, start: 1, direction: 'ltr', format: '', indent: 0,
         tag: listType === 'bullet' ? 'ul' : 'ol',
-        children: items.map(b => makeListItem(b.content)),
+        children: items.map((b, index) => {
+          const item = makeListItem(b.content);
+          if (listType === 'number') {
+            item.value = index + 1;
+          }
+          return item;
+        }),
       });
       continue;
     }
@@ -199,7 +224,9 @@ function extractText(children: any[]): string {
       const linkText = c.children?.map((lc: any) => lc.text || '').join('') || '';
       return `[${linkText}](${c.fields?.url || ''})`;
     }
-    return c.text || '';
+    let txt = c.text || '';
+    if (c.format & 1) txt = `**${txt}**`;
+    return txt;
   }).join('');
 }
 

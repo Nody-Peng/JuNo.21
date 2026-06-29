@@ -9,16 +9,36 @@ export default function ProductCarousel({ items, sectionTitle }: { items: any[],
   const [showHint, setShowHint] = useState(true);
 
   useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    
     const handleScroll = () => {
-      if (scrollRef.current && scrollRef.current.scrollLeft > 20) {
+      if (el.scrollLeft > 20) {
         setShowHint(false);
       }
     };
-    const el = scrollRef.current;
-    if (el) {
-      el.addEventListener('scroll', handleScroll);
-      return () => el.removeEventListener('scroll', handleScroll);
-    }
+    
+    const handleWheel = (e: WheelEvent) => {
+      // If horizontal scrolling (like a trackpad), let it be
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+      
+      if (e.deltaY !== 0) {
+        const maxScrollLeft = el.scrollWidth - el.clientWidth;
+        // Check if we can scroll horizontally in the direction of the wheel
+        if ((e.deltaY > 0 && el.scrollLeft < maxScrollLeft) || (e.deltaY < 0 && el.scrollLeft > 0)) {
+          e.preventDefault();
+          el.scrollLeft += e.deltaY;
+        }
+      }
+    };
+
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      el.removeEventListener('scroll', handleScroll);
+      el.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
