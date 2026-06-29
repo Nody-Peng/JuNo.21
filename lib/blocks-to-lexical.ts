@@ -27,8 +27,8 @@ export interface Block {
 
 // ─── Block → Lexical ─────────────────────────────────────────
 
-function makeText(text: string) {
-  return { type: 'text', text, version: 1, format: 0, detail: 0, mode: 'normal', style: '' };
+function makeText(text: string, format: number = 0) {
+  return { type: 'text', text, version: 1, format, detail: 0, mode: 'normal', style: '' };
 }
 
 function parseBold(text: string) {
