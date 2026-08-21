@@ -1,7 +1,8 @@
 import { buildConfig, Block } from 'payload';
 import { postgresAdapter } from '@payloadcms/db-postgres';
-import { lexicalEditor, BlocksFeature } from '@payloadcms/richtext-lexical';
+import { lexicalEditor, BlocksFeature, InlineToolbarFeature } from '@payloadcms/richtext-lexical';
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob';
+import { FieldHook } from 'payload';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -166,6 +167,74 @@ const ButtonBlock: Block = {
   ]
 };
 
+const CodeBlock: Block = {
+  slug: 'codeBlock',
+  labels: { singular: '程式碼 (Code Block)', plural: '程式碼 (Code Blocks)' },
+  fields: [
+    {
+      name: 'language',
+      type: 'text',
+      label: '語言 (例如: typescript, html, python)',
+      defaultValue: 'typescript',
+    },
+    {
+      name: 'code',
+      type: 'code',
+      required: true,
+      label: '程式碼內容',
+    }
+  ]
+};
+
+const CalloutBlock: Block = {
+  slug: 'callout',
+  labels: { singular: '提示框 (Callout)', plural: '提示框 (Callouts)' },
+  fields: [
+    {
+      name: 'icon',
+      type: 'text',
+      label: '圖示 (Emoji)',
+      defaultValue: '💡',
+      required: true,
+    },
+    {
+      name: 'textHtml',
+      type: 'textarea',
+      label: '內容 (支援 HTML)',
+    },
+  ],
+};
+
+const ToggleBlock: Block = {
+  slug: 'toggle',
+  labels: { singular: '折疊列表 (Toggle)', plural: '折疊列表 (Toggles)' },
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      label: '標題',
+    },
+    {
+      name: 'textHtml',
+      type: 'textarea',
+      label: '折疊內容 (支援 HTML)',
+    },
+  ],
+};
+
+const formatSlug = (fallback: string): FieldHook => {
+  return ({ value, originalDoc, data }) => {
+    if (typeof value === 'string' && value.trim() !== '') {
+      return value.trim().toLowerCase().replace(/\s+/g, '-');
+    }
+    const fallbackData = data?.[fallback] || originalDoc?.[fallback];
+    if (fallbackData && typeof fallbackData === 'string') {
+      return fallbackData.trim().toLowerCase().replace(/\s+/g, '-');
+    }
+    return value;
+  };
+};
+
 export default buildConfig({
   admin: {
     user: 'users',
@@ -186,7 +255,7 @@ export default buildConfig({
           path: '/send-newsletter',
         },
       },
-    }
+    },
   },
   
   editor: lexicalEditor({}),
@@ -263,6 +332,9 @@ export default buildConfig({
           admin: {
             position: 'sidebar',
           },
+          hooks: {
+            beforeValidate: [formatSlug('title')],
+          },
         },
         {
           name: 'status',
@@ -332,8 +404,9 @@ export default buildConfig({
           editor: lexicalEditor({
             features: ({ defaultFeatures }) => [
               ...defaultFeatures,
+              InlineToolbarFeature(),
               BlocksFeature({
-                blocks: [MapBlock, VideoBlock, ProductBlock, TableBlock, TOCBlock, ButtonBlock],
+                blocks: [MapBlock, VideoBlock, ProductBlock, TableBlock, TOCBlock, ButtonBlock, CodeBlock, CalloutBlock, ToggleBlock],
               }),
             ],
           }),

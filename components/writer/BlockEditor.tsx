@@ -5,6 +5,7 @@ import {
 import type { Block, BlockType } from '@/lib/blocks-to-lexical';
 import { uid } from '@/lib/blocks-to-lexical';
 import SlashMenu from './SlashMenu';
+import TipTapBlock from './TipTapBlock';
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -33,6 +34,8 @@ const BLOCK_STYLE: Record<BlockType, string> = {
   image:        '', // Handled by custom UI
   button:       '', // Handled by custom UI
   toc:          'text-[15px] bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-700',
+  callout:      '', // Handled by custom UI
+  toggle:       '', // Handled by custom UI
 };
 
 const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
@@ -52,6 +55,8 @@ const BLOCK_PLACEHOLDER: Record<BlockType, string> = {
   image:        '', // Handled by custom UI
   button:       '', // Handled by custom UI
   toc:          '', // Handled by custom UI
+  callout:      '', // Handled by custom UI
+  toggle:       '', // Handled by custom UI
 };
 
 // ─── Markdown shortcut detection ─────────────────────────────
@@ -60,7 +65,9 @@ function detectMarkdown(text: string): BlockType | null {
   if (text === '# ')     return 'heading1';
   if (text === '## ')    return 'heading2';
   if (text === '### ')   return 'heading3';
-  if (text === '> ')     return 'quote';
+  if (text === '| ')     return 'quote';
+  if (text === '> ')     return 'toggle';
+  if (text === '! ')     return 'callout';
   if (text === '```')    return 'code';
   if (text === '--- ')   return 'divider';
   if (text === '- ')     return 'bulletList';
@@ -81,6 +88,7 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
     position: { top: number; left: number };
   } | null>(null);
   const [hoveredBlock, setHoveredBlock] = useState<string | null>(null);
+  const [focusId, setFocusId] = useState<string | null>(null);
 
   const textareaRefs = useRef<Map<string, HTMLTextAreaElement>>(new Map());
 
@@ -90,6 +98,19 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocks]);
 
+  // Fix text truncation on mount (auto-resize all textareas)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      textareaRefs.current.forEach(el => {
+        if (el && !el.className.includes('w-0')) {
+          el.style.height = 'auto';
+          el.style.height = el.scrollHeight + 'px';
+        }
+      });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [blocks]);
+
   // Auto-resize textarea
   const autoResize = useCallback((el: HTMLTextAreaElement) => {
     el.style.height = 'auto';
@@ -97,6 +118,7 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
   }, []);
 
   const focusBlock = useCallback((id: string, atEnd = true) => {
+    setFocusId(id);
     setTimeout(() => {
       const el = textareaRefs.current.get(id);
       if (!el) return;
@@ -190,6 +212,16 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
       e.preventDefault();
       return; // SlashMenu handles this
     }
+
+    // Intercept Backspace for empty TipTap blocks to delete them
+    if (e.key === 'Backspace' && (block.content === '<p></p>' || block.content.trim() === '')) {
+      e.preventDefault();
+      deleteBlock(block.id);
+      return;
+    }
+
+    const isTextarea = el && el.tagName === 'TEXTAREA';
+    if (!isTextarea) return; // TipTap handles its own Enter/Backspace/Arrow navigation
 
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -368,63 +400,23 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
         }
       }, 10);
     } else {
-      updateBlock(blockId, { type, content: '', data: initialData });
+      setBlocks(prev => {
+        const idx = prev.findIndex(b => b.id === blockId);
+        if (idx === -1) return prev;
+        let newContent = prev[idx].content;
+        newContent = newContent.replace(/\/[^/<]*?(<\/p>)$/, '$1');
+        const next = [...prev];
+        next[idx] = { ...prev[idx], type, content: newContent, data: initialData };
+        return next;
+      });
     }
     focusBlock(blockId);
   }, [slashMenu, updateBlock, insertBlockAfter, focusBlock, autoResize]);
-
-  const applyFormatting = useCallback((prefix: string, suffix: string) => {
-    const el = document.activeElement as HTMLTextAreaElement | HTMLInputElement;
-    if (el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
-      const start = el.selectionStart || 0;
-      const end = el.selectionEnd || 0;
-      const val = el.value;
-      const selected = val.substring(start, end);
-      
-      const newVal = val.substring(0, start) + prefix + selected + suffix + val.substring(end);
-      
-      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-        window[el.tagName === 'TEXTAREA' ? 'HTMLTextAreaElement' : 'HTMLInputElement'].prototype, 
-        "value"
-      )?.set;
-      
-      nativeInputValueSetter?.call(el, newVal);
-      const event = new Event('input', { bubbles: true });
-      el.dispatchEvent(event);
-      
-      setTimeout(() => {
-        el.focus();
-        el.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
-      }, 0);
-    }
-  }, []);
 
   // ── Render ────────────────────────────────────────────────
 
   return (
     <div className="relative w-full min-h-[400px]">
-      {/* ── Formatting Toolbar ── */}
-      <div className="sticky top-4 z-40 bg-white/90 backdrop-blur-md border border-gray-200 p-2.5 mb-8 flex flex-wrap gap-3 items-center rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)]">
-        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">反白文字後套用格式：</span>
-        
-        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('**', '**'); }} className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded border border-gray-200 font-medium transition-colors" title="粗體 (Bold)">
-          <span className="font-bold font-serif text-[14px] leading-none">B</span>
-          粗體
-        </button>
-        
-        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('[', '](url)'); }} className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded border border-gray-200 font-medium transition-colors" title="插入連結">
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          連結
-        </button>
-
-        <div className="w-px h-5 bg-gray-300 mx-1"></div>
-
-        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#DC2626}', '{/color}'); }} className="w-5 h-5 rounded-full bg-red-600 hover:scale-125 transition-transform border border-red-700 shadow-sm" title="紅色文字"></button>
-        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#D97706}', '{/color}'); }} className="w-5 h-5 rounded-full bg-amber-600 hover:scale-125 transition-transform border border-amber-700 shadow-sm" title="橘色文字"></button>
-        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#059669}', '{/color}'); }} className="w-5 h-5 rounded-full bg-emerald-600 hover:scale-125 transition-transform border border-emerald-700 shadow-sm" title="綠色文字"></button>
-        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#2563EB}', '{/color}'); }} className="w-5 h-5 rounded-full bg-blue-600 hover:scale-125 transition-transform border border-blue-700 shadow-sm" title="藍色文字"></button>
-        <button onMouseDown={(e) => { e.preventDefault(); applyFormatting('{color:#4B5563}', '{/color}'); }} className="w-5 h-5 rounded-full bg-gray-600 hover:scale-125 transition-transform border border-gray-700 shadow-sm" title="灰色文字"></button>
-      </div>
       {blocks.map((block) => (
         <div
           key={block.id}
@@ -610,6 +602,64 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                     className="w-0 h-0 opacity-0 absolute"
                   />
                 </div>
+              ) : block.type === 'callout' ? (
+                <div className="my-2 flex gap-4 rounded-xl border border-stone-200 bg-stone-50/50 p-5 group/callout transition-colors hover:border-stone-300">
+                  <div className="flex-shrink-0 text-xl leading-none pt-0.5 relative">
+                    <input 
+                      className="w-7 h-7 bg-transparent border-none text-center outline-none cursor-pointer p-0"
+                      value={block.data?.icon || '💡'}
+                      onChange={e => {
+                        let val = e.target.value;
+                        if (val.length > 2) val = val.slice(-2); // naive emoji picker
+                        updateBlock(block.id, { data: { ...block.data, icon: val } });
+                      }}
+                      title="點擊更換 Emoji"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <TipTapBlock
+                      content={block.data?.textHtml || ''}
+                      placeholder="輸入提示內容..."
+                      className="text-stone-700 text-[15px] leading-relaxed"
+                      onChange={html => updateBlock(block.id, { data: { ...block.data, textHtml: html } })}
+                      onKeyDown={(e, html) => {
+                        if (e.key === 'Backspace' && (html === '<p></p>' || html.trim() === '')) {
+                          e.preventDefault();
+                          deleteBlock(block.id);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : block.type === 'toggle' ? (
+                <div className="my-2 group border-b border-stone-200 pb-2">
+                  <div className="flex items-center gap-3 py-2">
+                    <span className="text-stone-400 group-open:rotate-90 transition-transform duration-200 flex-shrink-0">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                    <input 
+                      type="text"
+                      className="flex-1 bg-transparent outline-none font-medium text-stone-800 placeholder-stone-400"
+                      placeholder="折疊列表標題..."
+                      value={block.data?.title || ''}
+                      onChange={e => updateBlock(block.id, { data: { ...block.data, title: e.target.value } })}
+                    />
+                  </div>
+                  <div className="pl-8 pb-3 pt-1">
+                    <TipTapBlock
+                      content={block.data?.textHtml || ''}
+                      placeholder="輸入隱藏內容..."
+                      className="text-stone-600 text-[15px] leading-relaxed"
+                      onChange={html => updateBlock(block.id, { data: { ...block.data, textHtml: html } })}
+                      onKeyDown={(e, html) => {
+                        if (e.key === 'Backspace' && (html === '<p></p>' || html.trim() === '')) {
+                          e.preventDefault();
+                          deleteBlock(block.id);
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
               ) : block.type === 'product' ? (
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -760,7 +810,7 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                   />
                 </div>
               ) : block.type === 'table' ? (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-5 flex flex-col gap-4 overflow-x-auto">
+                <div className="bg-gray-50/50 border border-gray-200 rounded-lg p-5 flex flex-col gap-4">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">📊</span>
@@ -774,7 +824,7 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                           newData.rows.forEach((r: any) => r.cells.push({ text: '', imageUrl: '' }));
                           updateBlock(block.id, { data: newData });
                         }}
-                        className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100"
+                        className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 hover:text-amber-600 transition-colors"
                       >+ 新增欄位</button>
                       <button 
                         onClick={() => {
@@ -783,7 +833,7 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                           newData.rows.push(newRow);
                           updateBlock(block.id, { data: newData });
                         }}
-                        className="text-xs px-2 py-1 bg-white border border-gray-200 rounded hover:bg-gray-100"
+                        className="text-xs px-3 py-1.5 bg-white border border-gray-200 rounded-md shadow-sm hover:bg-gray-50 hover:text-amber-600 transition-colors"
                       >+ 新增列</button>
                     </div>
                   </div>
@@ -792,13 +842,15 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                     placeholder="表格標題 (可選)"
                     value={block.data?.title || ''}
                     onChange={e => updateBlock(block.id, { data: { ...block.data, title: e.target.value } })}
-                    className="w-full border border-transparent bg-transparent font-medium px-1 py-1 text-sm outline-none focus:border-amber-400 focus:bg-white focus:rounded-md transition-all"
+                    className="w-full border border-transparent bg-transparent font-medium px-2 py-1 text-[15px] outline-none focus:border-amber-400 focus:bg-white focus:rounded-md transition-all placeholder-gray-400"
                   />
-                  <table className="w-full text-sm text-left border-collapse min-w-[500px]">
-                    <thead className="bg-gray-100 text-gray-700">
-                      <tr>
-                        {block.data?.header?.map((h: any, i: number) => (
-                          <th key={i} className="border border-gray-300 p-2 relative group min-w-[200px]">
+                  
+                  <div className="w-full overflow-x-auto pb-2 custom-scrollbar">
+                    <table className="w-full text-sm text-left min-w-[600px] border-collapse bg-white shadow-sm rounded-lg overflow-hidden">
+                      <thead className="bg-gray-100 text-gray-700 border-b border-gray-200">
+                        <tr>
+                          {block.data?.header?.map((h: any, i: number) => (
+                            <th key={i} className="border-r border-gray-200 last:border-r-0 p-3 relative group min-w-[150px]">
                             <input 
                               type="text" 
                               value={h.text} 
@@ -818,7 +870,7 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                                   newData.rows.forEach((r: any) => r.cells.splice(i, 1));
                                   updateBlock(block.id, { data: newData });
                                 }}
-                                className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs"
+                                className="absolute top-1 right-1 text-[10px] bg-red-100 text-red-600 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                 title="刪除此欄"
                               >×</button>
                             )}
@@ -828,47 +880,33 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                     </thead>
                     <tbody>
                       {block.data?.rows?.map((row: any, rIdx: number) => (
-                        <tr key={rIdx} className="relative group">
+                        <tr key={rIdx} className="border-b border-gray-100 last:border-b-0 hover:bg-amber-50/30 transition-colors">
                           {row.cells?.map((cell: any, cIdx: number) => (
-                            <td key={cIdx} className="border border-gray-300 p-2 align-top bg-white relative">
-                              {cIdx === row.cells.length - 1 && block.data.rows.length > 1 && (
-                                <button 
-                                  onClick={() => {
-                                    const newData = { ...block.data };
-                                    newData.rows.splice(rIdx, 1);
-                                    updateBlock(block.id, { data: newData });
-                                  }}
-                                  className="absolute top-2 -right-8 w-6 h-6 rounded-full bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-xs z-10"
-                                  title="刪除此列"
-                                >×</button>
-                              )}
-                              <div className="flex flex-col gap-2">
-                                <textarea
-                                  placeholder="文字內容 (支援 [文字](網址) 連結)"
-                                  value={cell.text || ''}
+                            <td key={cIdx} className="border-r border-gray-100 last:border-r-0 p-3 relative group align-top">
+                              <TipTapBlock 
+                                content={cell.text}
+                                placeholder="輸入內容..."
+                                className="min-h-[40px] text-gray-600 text-[14px]"
+                                onChange={html => {
+                                  const newData = { ...block.data };
+                                  newData.rows[rIdx].cells[cIdx].text = html;
+                                  updateBlock(block.id, { data: newData });
+                                }}
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <input 
+                                  type="text" 
+                                  placeholder="圖片網址 (可選)"
+                                  value={cell.imageUrl || ''}
                                   onChange={e => {
                                     const newData = { ...block.data };
-                                    newData.rows[rIdx].cells[cIdx].text = e.target.value;
+                                    newData.rows[rIdx].cells[cIdx].imageUrl = e.target.value;
                                     updateBlock(block.id, { data: newData });
-                                    autoResize(e.target);
                                   }}
-                                  onFocus={e => autoResize(e.target)}
-                                  rows={1}
-                                  className="w-full resize-none bg-transparent outline-none text-gray-800 min-h-[1.5em]"
+                                  className="flex-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1 outline-none focus:border-amber-400"
                                 />
-                                <div className="flex gap-2">
-                                  <input 
-                                    type="text" 
-                                    placeholder="圖片網址 (可選)"
-                                    value={cell.imageUrl || ''}
-                                    onChange={e => {
-                                      const newData = { ...block.data };
-                                      newData.rows[rIdx].cells[cIdx].imageUrl = e.target.value;
-                                      updateBlock(block.id, { data: newData });
-                                    }}
-                                    className="flex-1 text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-2 py-1 outline-none focus:border-amber-400"
-                                  />
-                                  {onUploadImage && (
+                                {onUploadImage && (
+                                  <>
                                     <label className="cursor-pointer bg-white text-gray-500 hover:text-amber-600 border border-gray-200 rounded px-2 py-1 text-xs flex items-center justify-center transition-colors" title="上傳圖片">
                                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                       <input
@@ -887,15 +925,30 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                                         }}
                                       />
                                     </label>
-                                  )}
-                                </div>
+                                  </>
+                                )}
                               </div>
                             </td>
                           ))}
+                          {/* Row Delete Button (shown when hovering row) */}
+                          {block.data.rows.length > 1 && (
+                            <td className="w-8 border-none p-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => {
+                                  const newData = { ...block.data };
+                                  newData.rows.splice(rIdx, 1);
+                                  updateBlock(block.id, { data: newData });
+                                }}
+                                className="text-red-500 hover:text-red-700 text-[10px] w-5 h-5 bg-red-50 rounded-full inline-flex items-center justify-center m-1"
+                                title="刪除列"
+                              >✕</button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  </div>
                   <textarea
                     ref={el => {
                       if (el) textareaRefs.current.set(block.id, el);
@@ -908,27 +961,95 @@ export default function BlockEditor({ initialBlocks, onChange, onUploadImage }: 
                   />
                 </div>
               ) : (
-                <textarea
-                  ref={el => {
-                    if (el) textareaRefs.current.set(block.id, el);
-                    else textareaRefs.current.delete(block.id);
-                  }}
-                  defaultValue={block.content}
-                  placeholder={BLOCK_PLACEHOLDER[block.type]}
-                  rows={1}
-                  onKeyDown={e => handleKeyDown(e, block)}
-                  onChange={e => handleInput(e, block)}
-                  onFocus={e => autoResize(e.target)}
-                  className={[
-                    'w-full resize-none overflow-hidden outline-none bg-transparent placeholder-gray-300 transition-colors',
-                    'border-none focus:ring-0 p-0',
-                    BLOCK_STYLE[block.type],
-                    (block.type === 'bulletList' || block.type === 'numberedList') ? 'pl-6' : '',
-                    (block.type === 'code' || block.type === 'map' || block.type === 'video') ? 'w-full focus:bg-white focus:border-amber-200 focus:shadow-[0_4px_20px_rgba(0,0,0,0.03)]' : '',
-                  ].join(' ')}
-                  style={{ minHeight: '1.5em' }}
-                  spellCheck={block.type !== 'code' && block.type !== 'map' && block.type !== 'video'}
-                />
+                <>
+                  {block.type === 'code' && (
+                    <div className="absolute top-2 right-2 opacity-60 group-hover:opacity-100 transition-opacity z-10">
+                      <select
+                        value={block.data?.language || ''}
+                        onChange={e => updateBlock(block.id, { data: { ...block.data, language: e.target.value } })}
+                        className="text-[11px] font-bold tracking-wider uppercase bg-white border border-gray-200 rounded px-2 py-1 text-gray-500 hover:text-amber-600 outline-none shadow-sm cursor-pointer"
+                      >
+                        <option value="">Plain Text</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="python">Python</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="cmd">CMD / Bash</option>
+                      </select>
+                    </div>
+                  )}
+                  {(block.type === 'code' || block.type === 'map' || block.type === 'video') ? (
+                    <textarea
+                      ref={el => {
+                        if (el) textareaRefs.current.set(block.id, el);
+                        else textareaRefs.current.delete(block.id);
+                      }}
+                      defaultValue={block.content}
+                      placeholder={BLOCK_PLACEHOLDER[block.type]}
+                      rows={1}
+                      onKeyDown={e => handleKeyDown(e, block)}
+                      onChange={e => handleInput(e, block)}
+                      onFocus={e => autoResize(e.target)}
+                      className={[
+                        'w-full resize-none overflow-hidden outline-none bg-transparent placeholder-gray-300 transition-colors',
+                        'border-none focus:ring-0 p-0',
+                        BLOCK_STYLE[block.type],
+                        'w-full focus:bg-white focus:border-amber-200 focus:shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
+                      ].join(' ')}
+                      style={{ minHeight: '1.5em' }}
+                      spellCheck={false}
+                    />
+                  ) : (
+                    <TipTapBlock
+                      key={`${block.id}-${block.type}`}
+                      content={block.content}
+                      placeholder={BLOCK_PLACEHOLDER[block.type]}
+                      className={[
+                        BLOCK_STYLE[block.type],
+                        (block.type === 'bulletList' || block.type === 'numberedList') ? 'pl-6' : '',
+                      ].join(' ')}
+                      autoFocus={focusId === block.id}
+                      onChange={(html) => {
+                        updateBlock(block.id, { content: html });
+                        // Trigger autosize update on parent if needed
+                      }}
+                      onSplit={(firstHtml, restHtmls) => {
+                        updateBlock(block.id, { content: firstHtml });
+                        const newType: BlockType = (block.type === 'bulletList' || block.type === 'numberedList') ? block.type : 'paragraph';
+                        const newBlocks = restHtmls.map(html => ({ id: uid(), type: newType, content: html, data: block.data }));
+                        
+                        setBlocks(prev => {
+                          const idx = prev.findIndex(b => b.id === block.id);
+                          const next = [...prev];
+                          next.splice(idx + 1, 0, ...newBlocks);
+                          return next;
+                        });
+                        
+                        if (newBlocks.length > 0) {
+                          focusBlock(newBlocks[0].id, false);
+                        }
+                      }}
+                      onKeyDown={(e, html) => {
+                        // Forward keyboard events (like Enter, Backspace) to parent logic
+                        handleKeyDown(e as any, { ...block, content: html });
+                      }}
+                      onSlashMenu={(query, rect) => {
+                        setSlashMenu({ query, position: { top: rect.bottom, left: rect.left }, blockId: block.id });
+                      }}
+                      onSlashClose={() => setSlashMenu(null)}
+                      onMarkdownShortcut={(shortcut) => {
+                        const newType = detectMarkdown(`${shortcut} `);
+                        if (newType) {
+                          // Change block type and clear its content
+                          updateBlock(block.id, { type: newType, content: '' });
+                          // Force focus after re-render
+                          setTimeout(() => focusBlock(block.id, false), 50);
+                        }
+                      }}
+                    />
+                  )}
+                </>
               )}
             </div>
           )}

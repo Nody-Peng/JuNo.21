@@ -20,6 +20,7 @@ export default function EditClient({ token, userId, categories, post }: Props) {
     ((post.category as { id: string }[]) || []).map(c => c.id),
   );
   const [series, setSeries] = useState((post.series as string) || '');
+  const [slug, setSlug] = useState((post.slug as string) || '');
   const [blocks, setBlocks] = useState<Block[]>(() => lexicalToBlocks(post.content as { root?: { children?: unknown[] } }));
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(
@@ -67,6 +68,7 @@ export default function EditClient({ token, userId, categories, post }: Props) {
         content,
         category: selectedCategories.length ? selectedCategories : undefined,
         series: series.trim() || undefined,
+        slug: slug.trim() || undefined,
         heroImage: heroImageId,
         status: publish ? 'published' : 'draft',
       });
@@ -150,12 +152,18 @@ export default function EditClient({ token, userId, categories, post }: Props) {
 
         {/* Excerpt */}
         <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} placeholder="簡短的摘要（選填）..." rows={2}
-          className="w-full resize-none overflow-hidden outline-none bg-transparent text-base text-gray-400 italic placeholder-gray-200 border-none focus:ring-0 p-0 mb-1"
+          className="w-full resize-none overflow-hidden outline-none bg-transparent text-base text-gray-500 italic placeholder-gray-400 border-none focus:ring-0 p-0 mb-1"
           onInput={e => { const el = e.currentTarget; el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }} />
 
-        <input type="text" value={series} onChange={e => setSeries(e.target.value)}
-          placeholder="系列名稱（選填）"
-          className="w-full outline-none bg-transparent text-xs text-gray-300 placeholder-gray-200 border-none focus:ring-0 p-0 mb-8" />
+        {/* Series & Slug */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <input type="text" value={series} onChange={e => setSeries(e.target.value)}
+            placeholder="系列名稱（選填）"
+            className="flex-1 outline-none bg-transparent text-xs text-gray-500 placeholder-gray-400 border-none focus:ring-0 p-0" />
+          <input type="text" value={slug} onChange={e => setSlug(e.target.value)}
+            placeholder="網址 Slug（選填）"
+            className="flex-1 outline-none bg-transparent text-xs text-gray-500 placeholder-gray-400 border-none focus:ring-0 p-0 md:text-right" />
+        </div>
 
         <hr className="border-gray-100 mb-10" />
 

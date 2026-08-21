@@ -72,6 +72,18 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
     const Tag = tag;
     return <Tag id={id} className="scroll-mt-24">{nodesToJSX({ nodes: node.children })}</Tag>;
   },
+  code: ({ node, nodesToJSX }: { node: any, nodesToJSX: any }) => {
+    return (
+      <div className="my-8 rounded-xl overflow-hidden border border-gray-200 shadow-sm not-prose">
+        <div className="bg-gray-100 px-4 py-2 text-xs font-mono text-gray-500 border-b border-gray-200">
+          {node.language || 'text'}
+        </div>
+        <pre className="bg-stone-50 p-4 overflow-x-auto text-[14px] leading-relaxed whitespace-pre-wrap font-mono text-gray-800">
+          <code>{node.children?.map((c: any) => c.text || '').join('')}</code>
+        </pre>
+      </div>
+    );
+  },
   upload: ({ node }: { node: any }) => {
     return (
       <div className="w-full my-10 flex justify-center">
@@ -102,6 +114,16 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
         </div>
       );
     },
+    codeBlock: ({ node }: { node: any }) => (
+      <div className="my-8 rounded-xl overflow-hidden border border-gray-200 shadow-sm not-prose">
+        <div className="bg-gray-100 px-4 py-2 text-xs font-mono text-gray-500 border-b border-gray-200">
+          {node.fields.language || 'text'}
+        </div>
+        <pre className="bg-stone-50 p-4 overflow-x-auto text-[14px] leading-relaxed whitespace-pre-wrap font-mono text-gray-800">
+          <code>{node.fields.code}</code>
+        </pre>
+      </div>
+    ),
     toc: () => {
       if (headings.length === 0) return null;
       return (
@@ -225,6 +247,35 @@ const createConverters = (headings: { text: string; id: string; tag: string }[])
             <div className="absolute inset-0 bg-white/10 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
           </a>
         </div>
+      );
+    },
+    callout: ({ node }: { node: any }) => {
+      const { icon, textHtml } = node.fields;
+      return (
+        <div className="my-8 flex gap-4 rounded-xl border border-stone-200 bg-stone-50/50 p-5 md:p-6 shadow-sm not-prose">
+          <div className="flex-shrink-0 text-xl leading-none pt-0.5">{icon || '💡'}</div>
+          <div 
+            className="flex-1 text-stone-700 text-[15px] leading-relaxed prose-p:my-0 prose-a:text-amber-700 hover:prose-a:text-amber-900 prose-a:font-medium"
+            dangerouslySetInnerHTML={{ __html: textHtml || '' }}
+          />
+        </div>
+      );
+    },
+    toggle: ({ node }: { node: any }) => {
+      const { title, textHtml } = node.fields;
+      return (
+        <details className="my-8 group not-prose border-b border-stone-200 pb-2">
+          <summary className="flex items-center gap-3 py-3 cursor-pointer text-[16px] font-medium text-stone-800 hover:text-amber-800 transition-colors list-none">
+            <span className="text-stone-400 group-open:rotate-90 transition-transform duration-200 flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </span>
+            <span>{title || '展開內容...'}</span>
+          </summary>
+          <div 
+            className="pl-8 pb-4 pt-1 text-[15px] text-stone-600 leading-relaxed prose-p:my-2 prose-a:text-amber-700 hover:prose-a:text-amber-900"
+            dangerouslySetInnerHTML={{ __html: textHtml || '' }}
+          />
+        </details>
       );
     }
   }

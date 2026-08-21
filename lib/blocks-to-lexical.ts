@@ -16,7 +16,9 @@ export type BlockType =
   | 'table'
   | 'image'
   | 'button'
-  | 'toc';
+  | 'toc'
+  | 'callout'
+  | 'toggle';
 
 export interface Block {
   id: string;
@@ -31,83 +33,108 @@ function makeText(text: string, format: number = 0) {
   return { type: 'text', text, version: 1, format, detail: 0, mode: 'normal', style: '' };
 }
 
-function parseBold(text: string) {
-  if (!text) return [makeText('')];
-  const boldRegex = /\*\*([^*]+)\*\*/g;
-  const nodes = [];
-  let lastIndex = 0;
-  let match;
-  while ((match = boldRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      nodes.push(makeText(text.slice(lastIndex, match.index)));
-    }
-    nodes.push(makeText(match[1], 1)); // format: 1 is bold in Lexical
-    lastIndex = boldRegex.lastIndex;
-  }
-  if (lastIndex < text.length) {
-    nodes.push(makeText(text.slice(lastIndex)));
-  }
-  return nodes.length > 0 ? nodes : [makeText('')];
-}
+function parseHTMLToLexicalNodes(html: string) {
+  if (typeof window === 'undefined') return [makeText(html.replace(/<[^>]+>/g, '') || '')];
 
-function parseTextWithLinks(text: string) {
-  if (!text) return [makeText('')];
+  let doc;
+  if (typeof DOMParser !== 'undefined') {
+    doc = new DOMParser().parseFromString(html, 'text/html');
+  } else {
+    return [makeText(html.replace(/<[^>]+>/g, '') || '')];
+  }
+
+  const nodes: any[] = [];
   
-  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-  const nodes = [];
-  let lastIndex = 0;
-  let match;
+  function walk(element: Node, currentFormat: number = 0, currentColor: string | null = null) {
+    for (const child of Array.from(element.childNodes)) {
+      if (child.nodeType === Node.TEXT_NODE) {
+        if (child.textContent) {
+          const textNode = makeText(child.textContent, currentFormat);
+          if (currentColor) {
+            textNode.style = `color: ${currentColor}`;
+          }
+          nodes.push(textNode);
+        }
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const el = child as HTMLElement;
+        let format = currentFormat;
+        let color = currentColor;
+        
+        if (el.tagName === 'STRONG' || el.tagName === 'B') format |= 1;
+        if (el.tagName === 'EM' || el.tagName === 'I') format |= 2;
+        if (el.tagName === 'S' || el.tagName === 'STRIKE' || el.tagName === 'DEL') format |= 8;
+        
+        if (el.tagName === 'SPAN' && el.style.color) {
+          color = el.style.color;
+        }
+        
+        if (el.tagName === 'A') {
+          const localNodes: any[] = [];
+          const oldPush = nodes.push;
+          nodes.push = (...args: any[]) => localNodes.push(...args);
+          walk(el, format, color);
+          nodes.push = oldPush;
+          
+          nodes.push({
+            type: 'link',
+            version: 2,
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            fields: {
+              linkType: 'custom',
+              url: (el as HTMLAnchorElement).href || el.getAttribute('href') || '',
+              newTab: true,
+            },
+            children: localNodes.length ? localNodes : [makeText('')],
+          });
+          continue;
+        }
 
-  while ((match = linkRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      nodes.push(...parseBold(text.slice(lastIndex, match.index)));
+        if (el.tagName === 'BR') {
+          nodes.push({ type: 'linebreak', version: 1 });
+          continue;
+        }
+
+        if (el.tagName === 'P' || el.tagName === 'DIV') {
+          if (nodes.length > 0) {
+            nodes.push({ type: 'linebreak', version: 1 });
+          }
+        }
+        
+        walk(el, format, color);
+      }
     }
-    nodes.push({
-      type: 'link',
-      version: 2,
-      direction: 'ltr',
-      format: '',
-      indent: 0,
-      fields: {
-        linkType: 'custom',
-        url: match[2],
-        newTab: true,
-      },
-      children: parseBold(match[1]),
-    });
-    lastIndex = linkRegex.lastIndex;
-  }
-  if (lastIndex < text.length) {
-    nodes.push(...parseBold(text.slice(lastIndex)));
   }
 
+  walk(doc.body);
   return nodes.length > 0 ? nodes : [makeText('')];
 }
 
 function makeParagraph(text: string) {
   return {
     type: 'paragraph', version: 1, direction: 'ltr', format: '', indent: 0, textFormat: 0,
-    children: parseTextWithLinks(text),
+    children: parseHTMLToLexicalNodes(text),
   };
 }
 
 function makeHeading(text: string, tag: 'h1' | 'h2' | 'h3') {
   return {
     type: 'heading', tag, version: 1, direction: 'ltr', format: '', indent: 0,
-    children: parseTextWithLinks(text),
+    children: parseHTMLToLexicalNodes(text),
   };
 }
 
 function makeQuote(text: string) {
   return {
     type: 'quote', version: 1, direction: 'ltr', format: '', indent: 0,
-    children: parseTextWithLinks(text),
+    children: parseHTMLToLexicalNodes(text),
   };
 }
 
-function makeCode(text: string) {
+function makeCode(text: string, language: string = '') {
   return {
-    type: 'code', version: 1, direction: 'ltr', format: '', indent: 0, language: '',
+    type: 'code', version: 1, direction: 'ltr', format: '', indent: 0, language,
     children: text ? [makeText(text)] : [], // No links in code block
   };
 }
@@ -115,7 +142,7 @@ function makeCode(text: string) {
 function makeListItem(text: string) {
   return {
     type: 'listitem', version: 1, value: 1, format: '', indent: 0, direction: 'ltr',
-    children: parseTextWithLinks(text),
+    children: parseHTMLToLexicalNodes(text),
   };
 }
 
@@ -152,7 +179,7 @@ export function blocksToLexical(blocks: Block[]) {
       case 'heading2': nodes.push(makeHeading(block.content, 'h2')); break;
       case 'heading3': nodes.push(makeHeading(block.content, 'h3')); break;
       case 'quote':    nodes.push(makeQuote(block.content)); break;
-      case 'code':     nodes.push(makeCode(block.content)); break;
+      case 'code':     nodes.push(makeCode(block.content, block.data?.language || '')); break;
       case 'divider':
         nodes.push({ type: 'horizontalrule', version: 1 });
         break;
@@ -202,6 +229,12 @@ export function blocksToLexical(blocks: Block[]) {
       case 'toc':
         nodes.push({ type: 'block', fields: { blockType: 'toc' }, format: '', version: 2 });
         break;
+      case 'callout':
+        nodes.push({ type: 'block', fields: { blockType: 'callout', ...(block.data || {}) }, format: '', version: 2 });
+        break;
+      case 'toggle':
+        nodes.push({ type: 'block', fields: { blockType: 'toggle', ...(block.data || {}) }, format: '', version: 2 });
+        break;
       default: nodes.push(makeParagraph(block.content));
     }
     i++;
@@ -217,16 +250,41 @@ export function blocksToLexical(blocks: Block[]) {
 
 // ─── Lexical → Block ─────────────────────────────────────────
 
-function extractText(children: any[]): string {
+function extractHTML(children: any[]): string {
   if (!children) return '';
   return children.map(c => {
     if (c.type === 'link') {
-      const linkText = c.children?.map((lc: any) => lc.text || '').join('') || '';
-      return `[${linkText}](${c.fields?.url || ''})`;
+      const linkHtml = extractHTML(c.children || []);
+      const url = c.fields?.url || '';
+      return `<a href="${url}">${linkHtml}</a>`;
     }
-    let txt = c.text || '';
-    if (c.format & 1) txt = `**${txt}**`;
-    return txt;
+    if (c.type === 'linebreak') {
+      return '<br>';
+    }
+    let html = c.text || '';
+    html = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    
+    if (c.format & 1) html = `<strong>${html}</strong>`;
+    if (c.format & 2) html = `<em>${html}</em>`;
+    if (c.format & 8) html = `<s>${html}</s>`;
+    
+    if (c.style && c.style.includes('color:')) {
+      const match = c.style.match(/color:\s*([^;]+)/);
+      if (match) {
+        html = `<span style="color: ${match[1]}">${html}</span>`;
+      }
+    }
+    return html;
+  }).join('');
+}
+
+function extractPlainText(children: any[]): string {
+  if (!children) return '';
+  return children.map(c => {
+    if (c.type === 'link') {
+      return extractPlainText(c.children || []);
+    }
+    return c.text || '';
   }).join('');
 }
 
@@ -238,23 +296,25 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
   const blocks: Block[] = [];
 
   for (const node of lexical.root.children as Record<string, unknown>[]) {
-    const text = extractText((node.children as any[]) || []);
+    const htmlText = extractHTML((node.children as any[]) || []);
+    const plainText = extractPlainText((node.children as any[]) || []);
 
     if (node.type === 'heading') {
       const tagMap: Record<string, BlockType> = { h1: 'heading1', h2: 'heading2', h3: 'heading3' };
-      blocks.push({ id: uid(), type: tagMap[node.tag as string] || 'heading1', content: text });
+      blocks.push({ id: uid(), type: tagMap[node.tag as string] || 'heading1', content: htmlText });
     } else if (node.type === 'quote') {
-      blocks.push({ id: uid(), type: 'quote', content: text });
+      blocks.push({ id: uid(), type: 'quote', content: htmlText });
     } else if (node.type === 'code') {
-      blocks.push({ id: uid(), type: 'code', content: text });
+      blocks.push({ id: uid(), type: 'code', content: plainText, data: { language: (node as any).language || '' } });
     } else if (node.type === 'horizontalrule') {
       blocks.push({ id: uid(), type: 'divider', content: '' });
     } else if (node.type === 'list') {
-      const listType: BlockType = node.listType === 'bullet' ? 'bulletList' : 'numberedList';
-      for (const item of (node.children as Record<string, unknown>[]) || []) {
-        const itemText = extractText((item.children as any[]) || []);
-        blocks.push({ id: uid(), type: listType, content: itemText });
+      const listType = (node as any).listType === 'number' ? 'numberedList' : 'bulletList';
+      for (const item of ((node as any).children || [])) {
+        blocks.push({ id: uid(), type: listType, content: extractHTML(item.children || []) });
       }
+    } else if (node.type === 'paragraph') {
+      blocks.push({ id: uid(), type: 'paragraph', content: htmlText });
     } else if (node.type === 'block') {
       const fields = node.fields as any;
       if (fields?.blockType === 'map') {
@@ -269,12 +329,16 @@ export function lexicalToBlocks(lexical: { root?: { children?: unknown[] } }): B
         blocks.push({ id: uid(), type: 'button', content: '', data: fields });
       } else if (fields?.blockType === 'toc') {
         blocks.push({ id: uid(), type: 'toc', content: '' });
+      } else if (fields?.blockType === 'callout') {
+        blocks.push({ id: uid(), type: 'callout', content: '', data: fields });
+      } else if (fields?.blockType === 'toggle') {
+        blocks.push({ id: uid(), type: 'toggle', content: '', data: fields });
       }
     } else if (node.type === 'upload' && node.relationTo === 'media') {
       const mediaDoc = node.value as any;
       blocks.push({ id: uid(), type: 'image', content: '', data: { image: mediaDoc } });
     } else {
-      blocks.push({ id: uid(), type: 'paragraph', content: text });
+      blocks.push({ id: uid(), type: 'paragraph', content: htmlText });
     }
   }
 

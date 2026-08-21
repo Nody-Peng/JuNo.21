@@ -33,13 +33,17 @@ const TOCIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none
 
 const ImageIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
 const ButtonIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="12" x="3" y="6" rx="3" ry="3"/><path d="M12 12h.01"/></svg>;
+const CalloutIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>;
+const ToggleIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
 
 export const SLASH_ITEMS: SlashItem[] = [
   { type: 'paragraph',    icon: <Icon><ParagraphIcon /></Icon>,   label: '文字段落',  desc: '一般段落文字',   shortcut: '' },
   { type: 'heading1',     icon: <Icon><H1Icon /></Icon>,  label: '大標題',    desc: '最大的標題',      shortcut: '#' },
   { type: 'heading2',     icon: <Icon><H2Icon /></Icon>,  label: '中標題',    desc: '第二層標題',      shortcut: '##' },
   { type: 'heading3',     icon: <Icon><H3Icon /></Icon>,  label: '小標題',    desc: '第三層標題',      shortcut: '###' },
-  { type: 'quote',        icon: <Icon><QuoteIcon /></Icon>,   label: '引用區塊',  desc: '強調引用的文字',  shortcut: '>' },
+  { type: 'quote',        icon: <Icon><QuoteIcon /></Icon>,   label: '引用區塊',  desc: '強調引用的文字',  shortcut: '|' },
+  { type: 'toggle',       icon: <Icon><ToggleIcon /></Icon>,  label: '折疊列表',  desc: '可展開收起的列表', shortcut: '>' },
+  { type: 'callout',      icon: <Icon><CalloutIcon /></Icon>, label: '提示框',    desc: '醒目的提示區塊',   shortcut: '!' },
   { type: 'code',         icon: <Icon><CodeIcon /></Icon>, label: '程式碼',  desc: '等寬程式碼區塊', shortcut: '```' },
   { type: 'divider',      icon: <Icon><DividerIcon /></Icon>,   label: '分隔線',    desc: '水平分隔線',      shortcut: '---' },
   { type: 'bulletList',   icon: <Icon><ListIcon /></Icon>,   label: '無序列表',  desc: '帶圓點的清單',    shortcut: '-' },

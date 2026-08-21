@@ -22,3 +22,16 @@ button.btn {
   letter-spacing: 0.05em;
   font-family: inherit;
 }
+
+/* Fix Lexical editor text wrapping for Chinese characters */
+.payload-richtext, .lexical-editor {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+/* Ensure code nodes are visible and wrap */
+.lexical-editor code {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+}

@@ -22,7 +22,8 @@ export default function WriteClient({ token, userId, categories }: Props) {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [published, setPublished] = useState(false);
+  const [autoSaved, setAutoSaved] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const handleCoverChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,6 +47,46 @@ export default function WriteClient({ token, userId, categories }: Props) {
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id],
     );
   };
+
+  const AUTO_SAVE_KEY = 'juno_draft_post';
+
+  // Load from local storage
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(AUTO_SAVE_KEY);
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        if (parsed.title) setTitle(parsed.title);
+        if (parsed.excerpt) setExcerpt(parsed.excerpt);
+        if (parsed.series) setSeries(parsed.series);
+        if (parsed.slug) setSlug(parsed.slug);
+        if (parsed.blocks && parsed.blocks.length > 0) setBlocks(parsed.blocks);
+        if (parsed.selectedCategories) setSelectedCategories(parsed.selectedCategories);
+      } catch (e) {
+        console.error('Failed to parse saved draft');
+      }
+    }
+  }, []);
+
+  // Save to local storage
+  useEffect(() => {
+    const data = { title, excerpt, series, slug, blocks, selectedCategories };
+    const timeout = setTimeout(() => {
+      localStorage.setItem(AUTO_SAVE_KEY, JSON.stringify(data));
+      setAutoSaved(true);
+      setTimeout(() => setAutoSaved(false), 2000);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [title, excerpt, series, slug, blocks, selectedCategories]);
+
+  // Word count and reading time
+  const wordCount = blocks.reduce((acc, block) => {
+    if (block.type === 'image' || block.type === 'video' || block.type === 'divider') return acc;
+    const text = block.content.replace(/<[^>]*>?/gm, '');
+    return acc + text.length; 
+  }, 0) + title.length + excerpt.length;
+  
+  const readingTime = Math.max(1, Math.ceil(wordCount / 300));
 
   const handleSave = useCallback(async (publish: boolean) => {
     if (!title.trim()) {
@@ -81,7 +122,8 @@ export default function WriteClient({ token, userId, categories }: Props) {
       const result = await createPost(token, postData);
 
       if (result?.id) {
-        setSaved(true);
+        localStorage.removeItem(AUTO_SAVE_KEY);
+        setPublished(true);
         setTimeout(() => {
           router.push('/my-posts');
         }, 800);
@@ -96,7 +138,7 @@ export default function WriteClient({ token, userId, categories }: Props) {
     }
   }, [title, excerpt, blocks, coverFile, token, userId, selectedCategories, series, slug, router]);
 
-  if (saved) {
+  if (published) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -134,6 +176,18 @@ export default function WriteClient({ token, userId, categories }: Props) {
             {saving ? 'Publishing...' : 'Publish'}
           </button>
         </div>
+      </div>
+
+      <div className="flex justify-center items-center py-2 px-8 bg-gray-50 border-b border-gray-100 text-[11px] text-gray-400 gap-4 tracking-widest uppercase">
+        <span>{wordCount} Words</span>
+        <span>•</span>
+        <span>{readingTime} Min Read</span>
+        {autoSaved && (
+          <>
+            <span>•</span>
+            <span className="text-amber-600">Saved</span>
+          </>
+        )}
       </div>
 
       {/* ── Main Editor Area ── */}
@@ -220,14 +274,14 @@ export default function WriteClient({ token, userId, categories }: Props) {
             value={series}
             onChange={e => setSeries(e.target.value)}
             placeholder="系列名稱（選填，如：抗癌日記）"
-            className="flex-1 outline-none bg-transparent text-xs text-gray-300 placeholder-gray-200 border-none focus:ring-0 p-0"
+            className="flex-1 outline-none bg-transparent text-xs text-gray-500 placeholder-gray-400 border-none focus:ring-0 p-0"
           />
           <input
             type="text"
             value={slug}
             onChange={e => setSlug(e.target.value)}
             placeholder="網址 Slug（選填，如：my-first-post）"
-            className="flex-1 outline-none bg-transparent text-xs text-gray-300 placeholder-gray-200 border-none focus:ring-0 p-0 md:text-right"
+            className="flex-1 outline-none bg-transparent text-xs text-gray-500 placeholder-gray-400 border-none focus:ring-0 p-0 md:text-right"
           />
         </div>
 
